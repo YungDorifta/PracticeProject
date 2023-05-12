@@ -8,21 +8,17 @@
         Title="Первое приложение" Height="450" Width="800">
 
     <Grid x:Name="MainGrid">
-    
-        <Menu Height="25" VerticalAlignment="Top">
+        <Menu Height="20" VerticalAlignment="Top">
             <MenuItem Header="Поиск изображения">
                 <MenuItem Header="Оригинальное фото" ></MenuItem>
-                <MenuItem Header="Размеченное фото" >
-                    <MenuItem Header="WinForms"></MenuItem>
-                    <MenuItem Header="WPF" ></MenuItem>
-                </MenuItem>
+                <MenuItem Header="Размеченное фото" ></MenuItem>
             </MenuItem>
             <MenuItem Header="Добавить">
                 <MenuItem Header="Оригинальное фото" ></MenuItem>
                 <MenuItem Header="Размеченное фото" ></MenuItem>
             </MenuItem>
             <MenuItem Header="Изменить информацию">
-                <MenuItem Header="Об оригинальнорм фото" ></MenuItem>
+                <MenuItem Header="Об оригинальном фото" ></MenuItem>
                 <MenuItem Header="О размеченном фото" ></MenuItem>
             </MenuItem>
             <MenuItem Header="Удалить">
@@ -30,43 +26,29 @@
                 <MenuItem Header="Размеченное фото"></MenuItem>
             </MenuItem>
         </Menu>
-
-        <Grid x:Name="InfoGrid" Margin="5,25,5,5" ShowGridLines="True">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100*"/>
-                <ColumnDefinition Width="30*"/>
-            </Grid.ColumnDefinitions>
-
+        <Grid x:Name="InfoGrid" Margin="5,25,5,5">
             <Grid.RowDefinitions>
                 <RowDefinition/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="45"/>
             </Grid.RowDefinitions>
 
-            <Grid x:Name="SubGridWithButtons" Grid.Column="1" Margin="5" ShowGridLines="True">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-            
-                <Button x:Name="ButtonShow" Grid.Row="0" Content="Показать" Margin="5" Foreground="#FF660909" BorderBrush="Black" Background="#FFFDBBBB" FontWeight="Bold" FontStyle="Italic" FontFamily="Segoe Script" FontSize="20" Click="ClickMeBtn_Click" />
-                <Button x:Name="ButtonAdd" Grid.Row="1" Content="Добавить" Margin="5" Foreground="#FF660909" BorderBrush="Black" Background="#FFFDBBBB" FontWeight="Bold" FontStyle="Italic" FontFamily="Segoe Script" FontSize="20" Click="ClickMeBtn_Click" />
-                <Button x:Name="ButtonChange" Grid.Row="2" Content="Изменить" Margin="5" Foreground="#FF660909" BorderBrush="Black" Background="#FFFDBBBB" FontWeight="Bold" FontStyle="Italic" FontFamily="Segoe Script" FontSize="20" Click="ClickMeBtn_Click" />
-                <Button x:Name="ButtonDelete" Grid.Row="3" Content="Удалить" Margin="5" Foreground="#FF660909" BorderBrush="Black" Background="#FFFDBBBB" FontWeight="Bold" FontStyle="Italic" FontFamily="Segoe Script" FontSize="20" Click="ClickMeBtn_Click" />
+            <Image Grid.Row="0" Margin="5" Source="C:\Users\user\source\repos\WPF\App1\App1\Properties\Images\Picture.bmp" Stretch="Fill"/>
+            <Grid x:Name="BottomInfoSubGrid" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Label x:Name="DateOfPhoto"     Grid.Column="0"     Content="ДатаФото"      HorizontalAlignment="Left"      FontSize="20"   VerticalContentAlignment="Center"   Margin="5,0,0,0"/>
+                <Label x:Name="Region"          Grid.Column="1"     Content="Регион"        HorizontalAlignment="Center"    FontSize="20"   VerticalContentAlignment="Center"/>
+                <Label x:Name="DateOfMarkup"    Grid.Column="2"     Content="ДатаРазметки"  HorizontalAlignment="Center"    FontSize="20"   VerticalContentAlignment="Center"/>
+                <Button x:Name="ButtonMoreInfo" Grid.Column="3"     Content="Подробнее"     HorizontalAlignment="Right"     FontSize="15"   VerticalContentAlignment="Center"   Margin="5" Padding="5" BorderBrush="Black" Click="ClickMeBtn_Click" />
             </Grid>
-
-            <Image Source="C:\Users\user\source\repos\WPF\App1\App1\Properties\Images\Picture.bmp" Stretch="Fill" Grid.Row="0" Margin="10,10,0,10"/>
-            <Label x:Name="DateOfPhoto" Grid.Row="1" Content="ДатаФото" FontSize="20"  HorizontalAlignment="Left"/>
-            <Label x:Name="Region" Grid.Row="1" Content="Регион" FontSize="20" HorizontalAlignment="Center"/>
-            <Label x:Name="DateOfMarkup" Grid.Row="1" Content="ДатаРазметки" FontSize="20" HorizontalAlignment="Right"/>
-            <Button Name="ButtonMoreInfo" Content="Подробнее" Grid.Row="1" Grid.Column="1" Margin="10,0,10,10" BorderBrush="Black"  FontSize="20" Click="ClickMeBtn_Click"/>
-
-
-
-
-            <!--<Canvas HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>-->
-            <!--<Image  HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>-->
+            
+            <!--<Canvas HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>
+                <Image  HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>-->
         </Grid>
     </Grid>
 </Window>
