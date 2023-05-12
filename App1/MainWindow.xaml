@@ -9,29 +9,8 @@
 
     <Grid x:Name="MainGrid">
     
-        <Menu Height="25" VerticalAlignment="Top">
-            <MenuItem Header="Поиск изображения">
-                <MenuItem Header="Оригинальное фото" ></MenuItem>
-                <MenuItem Header="Размеченное фото" >
-                    <MenuItem Header="WinForms"></MenuItem>
-                    <MenuItem Header="WPF" ></MenuItem>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Добавить">
-                <MenuItem Header="Оригинальное фото" ></MenuItem>
-                <MenuItem Header="Размеченное фото" ></MenuItem>
-            </MenuItem>
-            <MenuItem Header="Изменить информацию">
-                <MenuItem Header="Об оригинальнорм фото" ></MenuItem>
-                <MenuItem Header="О размеченном фото" ></MenuItem>
-            </MenuItem>
-            <MenuItem Header="Удалить">
-                <MenuItem Header="Оригинальное фото"></MenuItem>
-                <MenuItem Header="Размеченное фото"></MenuItem>
-            </MenuItem>
-        </Menu>
 
-        <Grid x:Name="InfoGrid" Margin="5,25,5,5" ShowGridLines="True">
+        <Grid x:Name="InfoGrid" Margin="5" ShowGridLines="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100*"/>
                 <ColumnDefinition Width="30*"/>
