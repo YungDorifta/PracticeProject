@@ -1,9 +1,9 @@
-﻿<Window x:Class="App1.MainWindow"
+﻿<Window x:Class="PhotoViewer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:App1"
+        xmlns:local="clr-namespace:PhotoViewer"
         mc:Ignorable="d"
         Title="Первое приложение" Height="450" Width="800">
 
@@ -26,13 +26,23 @@
                 <MenuItem Header="Размеченное фото"></MenuItem>
             </MenuItem>
         </Menu>
+        
         <Grid x:Name="InfoGrid" Margin="5,25,5,5">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="45"/>
             </Grid.RowDefinitions>
 
-            <Image Grid.Row="0" Margin="5" Source="C:\Users\user\source\repos\WPF\App1\App1\Properties\Images\Picture.bmp" Stretch="Fill"/>
+            <Grid Grid.Row="0" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <Image x:Name="OriginalPic" Grid.Column="0" Margin="5" Source="C:\Users\user\Desktop\PRCVIprojMy\images\1.jpg" Stretch="Fill"/>
+                <Image x:Name="MarkedPic" Grid.Column="1" Margin="5" Source="C:\Users\user\Desktop\PRCVIprojMy\images\2.jpg" Stretch="Fill"/>
+            </Grid>
+            
             <Grid x:Name="BottomInfoSubGrid" Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

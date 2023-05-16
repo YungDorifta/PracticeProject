@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace App1
+namespace PhotoViewer
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -28,7 +28,9 @@ namespace App1
         private void ClickMeBtn_Click(object sender, RoutedEventArgs e)
         {
             Button Btn = (Button)sender;
-            Btn.Content = "Button is clicked...";
+            FullInfoWindow FIW = new FullInfoWindow();
+            FIW.Show();
+            this.Close();
         }
     }
 }
