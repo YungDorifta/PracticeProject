@@ -15,14 +15,19 @@ namespace PhotoViewer
     {
         //cтрока подключения к БД
         string connectionString;
-        
+
+        //ID изображений
+        string OriginalID, MarkupID;
+
         /// <summary>
         /// Конструктор окна доп. информации
         /// </summary>
-        public FullInfoWindow()
+        public FullInfoWindow(int OriginalID, int MarkupID)
         {
             InitializeComponent();
             connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            this.OriginalID = Convert.ToString(OriginalID);
+            this.MarkupID = Convert.ToString(MarkupID);
         }
 
         /// <summary>
@@ -44,9 +49,9 @@ namespace PhotoViewer
                 connection.Open();
 
                 //вывод картинок по путям из БД
-                string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=2";
+                string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
                 LoadImage(originalImage, SQL, connection);
-                SQL = "SELECT Picturepath FROM dbo.Markups WHERE OriginalID=2";
+                SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
                 LoadImage(markupImage, SQL, connection);
 
                 //заполнение таблицы информацией

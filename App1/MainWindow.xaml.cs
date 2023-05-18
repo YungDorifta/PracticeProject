@@ -20,15 +20,23 @@ namespace PhotoViewer
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// Конструктор главного окна
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Переход в окно полной информации
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClickMeBtn_Click(object sender, RoutedEventArgs e)
         {
             Button Btn = (Button)sender;
-            FullInfoWindow FIW = new FullInfoWindow();
+            FullInfoWindow FIW = new FullInfoWindow(1, 1);
             FIW.Show();
             this.Close();
         }
