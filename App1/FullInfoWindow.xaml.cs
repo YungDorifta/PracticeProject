@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Data.SqlClient;
-using System.Data;
 using System.Configuration;
+using System.Windows.Controls;
+using System.Data;
+using System.Data.SqlClient;
 using System.Windows.Media.Imaging;
 
 namespace PhotoViewer
@@ -146,7 +146,7 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow MW = new MainWindow();
+            MainWindow MW = new MainWindow(OriginalID, MarkupID);
             MW.Show();
             this.Close();
         }
