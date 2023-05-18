@@ -7,15 +7,23 @@
         xmlns:local="clr-namespace:PhotoViewer"
         mc:Ignorable="d"
         Title="FullInfoWindow" Height="450" Width="800">
-    <Grid>
+    <Grid x:Name="FullInfoWindowMainGrid">
         <Label x:Name="Lab" FontSize="25">This is an info window. You'll be able to see further info here later.</Label>
-        <DataGrid AutoGenerateColumns="False" x:Name="OriginalsGrid" Margin="50,50,50,100">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding OriginalID}" Header="OriginalID" Width="120"/>
-                <DataGridTextColumn Binding="{Binding Date}" Header="Date" Width="125"/>
-                <DataGridTextColumn Binding="{Binding Picturepath}" Header="Picturepath" Width="300"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <Grid x:Name="FullInfoSubGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Image x:Name="originalImage" HorizontalAlignment="Left" Height="180" Margin="10,40,10,10" VerticalAlignment="Top" Width="180"/>
+            <Image x:Name="markupImage" HorizontalAlignment="Left" Height="180" Margin="10,230,10,10" VerticalAlignment="Top" Width="180"/>
+            <DataGrid  x:Name="FullInfoTable" Grid.Column="1" AutoGenerateColumns="False" Margin="10,50,10,60">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding OriginalID}" Header="OriginalID" Width="120"/>
+                    <DataGridTextColumn Binding="{Binding Date}" Header="Date" Width="125"/>
+                    <DataGridTextColumn Binding="{Binding Picturepath}" Header="Picturepath" Width="300"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
         <Button Width="100" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Click="Button_Click" FontSize="20">Back</Button>
     </Grid>
 </Window>
