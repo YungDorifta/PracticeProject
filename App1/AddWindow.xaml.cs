@@ -53,6 +53,13 @@ namespace PhotoViewerPRCVI
             }
         }
 
+        private void AddWindowLoading(object sender, RoutedEventArgs e)
+        {
+            SelectType.SelectedIndex = 0;
+            OrigName.Items.Add("item1");
+            OrigName.Items.Add("item2");
+        }
+
         /// <summary>
         /// Сохранить изображение и вернуться в главное окно
         /// </summary>
@@ -97,14 +104,30 @@ namespace PhotoViewerPRCVI
             }
         }
 
-        private void ComboBoxItem_Selected(object sender, RoutedEventArgs e)
+        private void SelectedTypeOriginal(object sender, RoutedEventArgs e)
         {
+            OrigName.IsEnabled = false;
+            OrigName.Visibility = Visibility.Hidden;
 
+            RegOrigLabel.Content = "Регион:";
+            Region.Visibility = Visibility.Visible;
+            Region.IsEnabled = true;
+            SputLabel.Visibility = Visibility.Visible;
+            Sputnik.Visibility = Visibility.Visible;
+            Sputnik.IsEnabled = true;
         }
 
-        private void ComboBoxItem_Selected_1(object sender, RoutedEventArgs e)
+        private void SelectedTypeMarkup(object sender, RoutedEventArgs e)
         {
+            RegOrigLabel.Content = "Оригинал:";
+            Region.IsEnabled = false;
+            Region.Visibility = Visibility.Hidden;
+            SputLabel.Visibility = Visibility.Hidden;
+            Sputnik.IsEnabled = false;
+            Sputnik.Visibility = Visibility.Hidden;
 
+            OrigName.Visibility = Visibility.Visible;
+            OrigName.IsEnabled = true;
         }
     }
 }
