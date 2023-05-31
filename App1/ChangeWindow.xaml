@@ -1,0 +1,19 @@
+﻿<Window x:Class="PhotoViewerPRCVI.ChangeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PhotoViewerPRCVI"
+        mc:Ignorable="d"
+        Title="Изменить информацию об оригинальном снимке" Height="500" Width="700">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Content="Отмена" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Click="BackToMain"/>
+        <Button Content="Сохранить изменения" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom" Grid.Column="1" Click="SaveAndBackToMain"/>
+        
+    </Grid>
+</Window>

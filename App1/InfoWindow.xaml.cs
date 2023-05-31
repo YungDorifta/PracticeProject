@@ -16,7 +16,7 @@ namespace PhotoViewer
         //cтрока подключения к БД
         string connectionString;
 
-        //ID изображений
+        //OriginalID изображений
         string OriginalID, MarkupID;
 
         /// <summary>

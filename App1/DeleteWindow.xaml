@@ -1,0 +1,20 @@
+﻿<Window x:Class="PhotoViewerPRCVI.DeleteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PhotoViewerPRCVI"
+        mc:Ignorable="d"
+        
+        Title="Удалить информацию о снимке?" 
+        Height="150" Width="370" 
+        MinHeight="150" MinWidth="370"
+        MaxHeight="150" MaxWidth="370">
+    <Grid>
+
+        <Button Content="Отмена" HorizontalAlignment="Left" VerticalAlignment="Bottom" Click="BackToMain" Height="20" Margin="10"/>
+        <Button Content="Удалить" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom" Click="DeleteAndBackToMain" Height="20" Width="48"/>
+        <Label x:Name="DeleteWarnLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10, 10, 10, 40" HorizontalContentAlignment="Center"/>
+
+    </Grid>
+</Window>
