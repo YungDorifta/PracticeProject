@@ -1,6 +1,7 @@
 ﻿using PhotoViewer;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,13 @@ namespace PhotoViewerPRCVI
     /// </summary>
     public partial class AddWindow : Window
     {
+        //cтрока подключения к БД
+        string connectionString;
+
+        //OriginalID изображений
+        string OriginalID, MarkupID;
+
+        //тип добавляемого снимка
         string type;
 
         /// <summary>
@@ -28,6 +36,7 @@ namespace PhotoViewerPRCVI
         public AddWindow()
         {
             InitializeComponent();
+            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
             type = "original";
             this.Title = "Добавить оригинальный снимок";
@@ -40,7 +49,8 @@ namespace PhotoViewerPRCVI
         public AddWindow(string type)
         {
             InitializeComponent();
-            
+            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+
             if (type == "markup")
             {
                 this.type = type;
@@ -53,6 +63,11 @@ namespace PhotoViewerPRCVI
             }
         }
 
+        /// <summary>
+        /// Загрузка окна добавления снимка в БД
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AddWindowLoading(object sender, RoutedEventArgs e)
         {
             SelectType.SelectedIndex = 0;
@@ -84,6 +99,11 @@ namespace PhotoViewerPRCVI
             this.Close();
         }
 
+        /// <summary>
+        /// Показать файл пути в строке вывода
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FindAddImagePath(object sender, RoutedEventArgs e)
         {
             // Configure open file dialog box
@@ -104,6 +124,11 @@ namespace PhotoViewerPRCVI
             }
         }
 
+        /// <summary>
+        /// Изменение содержимого окна, когда выбран тип снимка - оригинал
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SelectedTypeOriginal(object sender, RoutedEventArgs e)
         {
             OrigName.IsEnabled = false;
@@ -117,6 +142,11 @@ namespace PhotoViewerPRCVI
             Sputnik.IsEnabled = true;
         }
 
+        /// <summary>
+        /// Изменение содержимого окна, когда выбран тип снимка - разметка
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SelectedTypeMarkup(object sender, RoutedEventArgs e)
         {
             RegOrigLabel.Content = "Оригинал:";
@@ -128,6 +158,84 @@ namespace PhotoViewerPRCVI
 
             OrigName.Visibility = Visibility.Visible;
             OrigName.IsEnabled = true;
+        }
+        
+        /// <summary> 
+        /// Проверка заполнения всех полей и разблокировка кнопки сохранения (для текстовых полей)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckForAllInputsTB(object sender, TextChangedEventArgs e)
+        {
+            if (AddFileName.IsLoaded == true)
+            {
+                if ((AddFileName.Text != "") && (AddFileName.Text != "Путь к файлу") && (SelectType.IsLoaded == true))
+                { 
+                    switch (SelectType.Text)
+                    {
+                        case "Оригинальный":
+                            {
+                                if ((Region.Text != "") && (Sputnik.Text != "") && (DateSelector.Text != "")) SaveBtn.IsEnabled = true;
+                                else SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                        case "Размеченный":
+                            {
+                                if ((OrigName.Text != "") && (DateSelector.Text != "")) SaveBtn.IsEnabled = true;
+                                else SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                        default:
+                            {
+                                SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    SaveBtn.IsEnabled = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверка заполнения всех полей и разблокировка кнопки сохранения (для даты)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckForAllInputsDate(object sender, SelectionChangedEventArgs e)
+        {
+            if (AddFileName.IsLoaded == true)
+            {
+                if ((AddFileName.Text != "") && (AddFileName.Text != "Путь к файлу") && (SelectType.IsLoaded == true))
+                {
+                    switch (SelectType.Text)
+                    {
+                        case "Оригинальный":
+                            {
+                                if ((Region.Text != "") && (Sputnik.Text != "") && (DateSelector.Text != "")) SaveBtn.IsEnabled = true;
+                                else SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                        case "Размеченный":
+                            {
+                                if ((OrigName.Text != "") && (DateSelector.Text != "")) SaveBtn.IsEnabled = true;
+                                else SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                        default:
+                            {
+                                SaveBtn.IsEnabled = false;
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    SaveBtn.IsEnabled = false;
+                }
+            }
         }
     }
 }
