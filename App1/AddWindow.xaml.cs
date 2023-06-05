@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +26,8 @@ namespace PhotoViewerPRCVI
         //cтрока подключения к БД
         string connectionString;
 
-        //OriginalID изображений
-        string OriginalID, MarkupID;
+        //подключение к БД
+        SqlConnection connection;
 
         //тип добавляемого снимка
         string type;
@@ -43,27 +45,6 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
-        /// Конструктор окна добавления снимка
-        /// </summary>
-        /// <param name="type"></param>
-        public AddWindow(string type)
-        {
-            InitializeComponent();
-            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-
-            if (type == "markup")
-            {
-                this.type = type;
-                this.Title = "Добавить размеченный снимок";
-            }
-            else
-            {
-                this.type = "original";
-                this.Title = "Добавить оригинальный снимок";
-            }
-        }
-
-        /// <summary>
         /// Загрузка окна добавления снимка в БД
         /// </summary>
         /// <param name="sender"></param>
@@ -71,34 +52,108 @@ namespace PhotoViewerPRCVI
         private void AddWindowLoading(object sender, RoutedEventArgs e)
         {
             SelectType.SelectedIndex = 0;
-            OrigName.Items.Add("item1");
-            OrigName.Items.Add("item2");
-        }
 
+            try
+            {
+                //подключение к БД используя строку подключения
+                connection = new SqlConnection(connectionString);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        
         /// <summary>
-        /// Сохранить изображение и вернуться в главное окно
+        /// Заполнение выбора оригинала из существующих в БД при загрузке поля
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SaveAndBackToMain(object sender, RoutedEventArgs e)
+        private void OrigName_Loaded(object sender, RoutedEventArgs e)
         {
-            MainWindow MW = new MainWindow();
-            MW.Show();
-            this.Close();
-        }
 
+            try
+            {
+                //открытие подключения
+                connection.Open();
+
+                //получение ID и названия оригиналов из БД 
+                string SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals";
+                SqlCommand command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("IDandPath", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 10, "OriginalID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable IDPathTable = new DataTable();
+                adapter.Fill(IDPathTable);
+
+                //вывод ID оригиналов в item
+                foreach (DataRow row in IDPathTable.Rows)
+                {
+                    string path = row.Field<string>("Picturepath");
+                    string[] pathsplit = path.Split('\\');
+                    string name = pathsplit[pathsplit.Length - 1];
+
+                    OrigName.Items.Add(row.Field<int>("OriginalID").ToString() + ": " + name);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        
         /// <summary>
-        /// Вернуться в главное окно
+        /// Изменение содержимого окна, когда выбран тип снимка - оригинал
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void BackToMain(object sender, RoutedEventArgs e)
+        private void SelectedTypeOriginal(object sender, RoutedEventArgs e)
         {
-            MainWindow MW = new MainWindow();
-            MW.Show();
-            this.Close();
+            type = "original";
+            this.Title = "Добавить оригинальный снимок";
+
+            OrigName.IsEnabled = false;
+            OrigName.Visibility = Visibility.Hidden;
+
+            RegOrigLabel.Content = "Регион:";
+            Region.Visibility = Visibility.Visible;
+            Region.IsEnabled = true;
+            SputLabel.Visibility = Visibility.Visible;
+            Sputnik.Visibility = Visibility.Visible;
+            Sputnik.IsEnabled = true;
         }
 
+        /// <summary>
+        /// Изменение содержимого окна, когда выбран тип снимка - разметка
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SelectedTypeMarkup(object sender, RoutedEventArgs e)
+        {
+            this.Title = "Добавить размеченный снимок";
+            this.type = "markup";
+
+            RegOrigLabel.Content = "Оригинал:";
+            Region.IsEnabled = false;
+            Region.Visibility = Visibility.Hidden;
+            SputLabel.Visibility = Visibility.Hidden;
+            Sputnik.IsEnabled = false;
+            Sputnik.Visibility = Visibility.Hidden;
+
+            OrigName.Visibility = Visibility.Visible;
+            OrigName.IsEnabled = true;
+        }
+        
         /// <summary>
         /// Показать файл пути в строке вывода
         /// </summary>
@@ -124,42 +179,6 @@ namespace PhotoViewerPRCVI
             }
         }
 
-        /// <summary>
-        /// Изменение содержимого окна, когда выбран тип снимка - оригинал
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SelectedTypeOriginal(object sender, RoutedEventArgs e)
-        {
-            OrigName.IsEnabled = false;
-            OrigName.Visibility = Visibility.Hidden;
-
-            RegOrigLabel.Content = "Регион:";
-            Region.Visibility = Visibility.Visible;
-            Region.IsEnabled = true;
-            SputLabel.Visibility = Visibility.Visible;
-            Sputnik.Visibility = Visibility.Visible;
-            Sputnik.IsEnabled = true;
-        }
-
-        /// <summary>
-        /// Изменение содержимого окна, когда выбран тип снимка - разметка
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SelectedTypeMarkup(object sender, RoutedEventArgs e)
-        {
-            RegOrigLabel.Content = "Оригинал:";
-            Region.IsEnabled = false;
-            Region.Visibility = Visibility.Hidden;
-            SputLabel.Visibility = Visibility.Hidden;
-            Sputnik.IsEnabled = false;
-            Sputnik.Visibility = Visibility.Hidden;
-
-            OrigName.Visibility = Visibility.Visible;
-            OrigName.IsEnabled = true;
-        }
-        
         /// <summary> 
         /// Проверка заполнения всех полей и разблокировка кнопки сохранения (для текстовых полей)
         /// </summary>
@@ -200,11 +219,11 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
-        /// Проверка заполнения всех полей и разблокировка кнопки сохранения (для даты)
+        /// Проверка заполнения всех полей и разблокировка кнопки сохранения (для выбора даты и оригинала)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void CheckForAllInputsDate(object sender, SelectionChangedEventArgs e)
+        private void CheckForAllInputsSelector(object sender, SelectionChangedEventArgs e)
         {
             if (AddFileName.IsLoaded == true)
             {
@@ -236,6 +255,85 @@ namespace PhotoViewerPRCVI
                     SaveBtn.IsEnabled = false;
                 }
             }
+        }
+
+        //доделать
+        /// <summary>
+        /// Сохранить изображение и вернуться в главное окно
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SaveAndBackToMain(object sender, RoutedEventArgs e)
+        {
+            string AddingPath = AddFileName.Text;
+            DateTime AddingDate = DateSelector.DisplayDate;
+
+            if (this.type == "original")
+            {
+                string AddingSputnik = Sputnik.Text;
+                string AddingRegion = Region.Text;
+
+                try
+                {
+                    //открытие подключения
+                    connection.Open();
+                    
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+            else if (this.type == "markup")
+            {
+                int AddingOriginalID = Convert.ToInt32(OrigName.Text.Split(':')[0]);
+
+                try
+                {
+                    //открытие подключения
+                    connection.Open();
+
+                    //поиск доступного ID для добавления картинки
+                    string SQL = "SELECT MAX(MarkupID) FROM dbo.Markups";
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    int newID = (int)command.ExecuteScalar();
+                    newID++;
+
+                    //добавление записи о снимке в таблицу БД
+                    SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," + 
+                        AddingOriginalID + "," + AddingDate + "," + AddingPath +");";
+                    command = new SqlCommand(SQL, connection);
+                    command.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            MainWindow MW = new MainWindow();
+            MW.Show();
+            this.Close();
+        }
+        
+        /// <summary>
+        /// Вернуться в главное окно
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackToMain(object sender, RoutedEventArgs e)
+        {
+            MainWindow MW = new MainWindow();
+            MW.Show();
+            this.Close();
         }
     }
 }

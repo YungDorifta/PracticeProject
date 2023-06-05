@@ -12,7 +12,7 @@
         <Menu Height="20" VerticalAlignment="Top">
             <MenuItem Header="Найти Снимок" Click="SearchPhotosClick">
             </MenuItem>
-            <MenuItem Header="Добавить" Click="AddOrigWidowOpen">
+            <MenuItem Header="Добавить" Click="AddWindowOpen">
             </MenuItem>
             <MenuItem Header="Изменить информацию">
                 <MenuItem Header="Об оригинальном фото" Click="ChangeOrigWindowOpen"></MenuItem>

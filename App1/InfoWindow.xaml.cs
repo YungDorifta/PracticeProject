@@ -89,7 +89,7 @@ namespace PhotoViewer
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
 
                 // установка команды на добавление для вызова хранимой процедуры
-                adapter.InsertCommand = new SqlCommand("sp_InsertPhone", connection);
+                adapter.InsertCommand = new SqlCommand("DateAndPicturepath", connection);
                 adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
                 adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
                 adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 50, "Picturepath"));

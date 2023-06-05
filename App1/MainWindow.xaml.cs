@@ -26,8 +26,7 @@ using System.Windows.Shapes;
 
 Поиск:      поиск изображений по различной информации
 
-Добавление: заполнение имен существующих оригиналов,    
-            добавление записи по нажатию кнопки
+Добавление: добавление записи по нажатию кнопки
 
 Изменение:  заполнение таблицы информацией,
             сохранение изменений
@@ -145,25 +144,13 @@ namespace PhotoViewer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AddOrigWidowOpen(object sender, RoutedEventArgs e)
+        private void AddWindowOpen(object sender, RoutedEventArgs e)
         {
-            AddWindow AW = new AddWindow("original");
+            AddWindow AW = new AddWindow();
             AW.Show();
             this.Close();
         }
-
-        /// <summary>
-        /// Добавить разметку
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AddMarkupWidowOpen(object sender, RoutedEventArgs e)
-        {
-            AddWindow AW = new AddWindow("markup");
-            AW.Show();
-            this.Close();
-        }
-
+        
         /// <summary>
         /// Изменить информацию об оригинальном фото
         /// </summary>
