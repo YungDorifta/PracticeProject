@@ -267,6 +267,7 @@ namespace PhotoViewerPRCVI
         {
             string AddingPath = AddFileName.Text;
             DateTime AddingDate = DateSelector.DisplayDate;
+            string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
 
             if (this.type == "original")
             {
@@ -277,7 +278,18 @@ namespace PhotoViewerPRCVI
                 {
                     //открытие подключения
                     connection.Open();
-                    
+
+                    //поиск доступного ID для добавления картинки
+                    string SQL = "SELECT MAX(OriginalID) FROM dbo.Originals";
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    int newID = (int)command.ExecuteScalar();
+                    newID++;
+
+                    //добавление записи о снимке в таблицу БД
+                    SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
+                          AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
+                    command = new SqlCommand(SQL, connection);
+                    command.ExecuteScalar();
                 }
                 catch (Exception ex)
                 {
@@ -305,7 +317,7 @@ namespace PhotoViewerPRCVI
 
                     //добавление записи о снимке в таблицу БД
                     SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," + 
-                        AddingOriginalID + "," + AddingDate + "," + AddingPath +");";
+                        AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath +"');";
                     command = new SqlCommand(SQL, connection);
                     command.ExecuteScalar();
                 }
