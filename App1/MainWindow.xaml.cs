@@ -18,24 +18,23 @@ using System.Windows.Shapes;
 
 /*
 Доделать:
-Везде:      адаптивное изображение и размеры
 
 !!!Главная:     вывод доп информаци под фото, надписи где какое фото
-                обновление картинок без выхода из окна
                 ссылки на открываемые окна для того, чтобы нельзя было открыть окна одного типа кучу раз
                 (?)связь окон: если открыто окно добавления и удаления, чтобы одно не мешало другому. Либо сделать так, чтобы можно было делать одно действие за один раз
 
-Доп. информация: вывод доп информации в таблицу доделать  
+!!!Удаление:   смена картинок в главном окне при удалении снимка/ов
+
+Доп. информация: вывод доп информации в таблицу доделать
 
 Поиск:      поиск изображений по различной информации
 
 Изменение:  заполнение таблицы информацией,
             сохранение изменений
 
-!!!Удаление:   смена картинок в главном окне при удалении снимка/ов
-
-База Данных: добавить доп. поля (?)
-
+(?):
+База Данных: добавить доп. поля 
+Везде:      адаптивное изображение и размеры
 */
 
 namespace PhotoViewer
@@ -51,6 +50,10 @@ namespace PhotoViewer
         //OriginalID изображений
         string OriginalID, MarkupID;
 
+        //ссылки на функциональные окна
+        public ChangeWindow CW;
+        public DeleteWindow DW;
+
         /// <summary>
         /// Конструктор главного окна
         /// </summary>
@@ -58,8 +61,8 @@ namespace PhotoViewer
         {
             InitializeComponent();
             connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            this.OriginalID = Convert.ToString(1);
-            this.MarkupID = Convert.ToString(1);
+            this.OriginalID = null;
+            this.MarkupID = null;
         }
 
         /// <summary>
@@ -93,17 +96,26 @@ namespace PhotoViewer
                 //открытие подключения
                 connection.Open();
 
+                if (OriginalID == null || MarkupID == null)
+                {
+                    string PreSQL = "SELECT Min(OriginalID) FROM dbo.Originals";
+                    SqlCommand preCommand = new SqlCommand(PreSQL, connection);
+                    OriginalID = Convert.ToString(preCommand.ExecuteScalar());
+                    PreSQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
+                    preCommand = new SqlCommand(PreSQL, connection);
+                    MarkupID = Convert.ToString(preCommand.ExecuteScalar());
+                }
+
                 //вывод картинок по путям из БД
-                
                 string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-                PhotoViewerImage.LoadImage(originalImage, SQL, connection);
+                PhotoViewerImage.LoadImage(TheOriginalWindowImage, SQL);
                 SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
-                PhotoViewerImage.LoadImage(markupImage, SQL, connection);
+                PhotoViewerImage.LoadImage(TheMarkupWindowImage, SQL);
                 
                 //PhotoViewerImage Orig = new PhotoViewerImage(1, connection);
-                //Orig.LoadImage(originalImage);
+                //Orig.LoadImage(TheOriginalWindowImage);
                 //PhotoViewerImage Mark = new PhotoViewerImage(1, 1, connection);
-                //Mark.LoadImage(markupImage);
+                //Mark.LoadImage(TheMarkupWindowImage);
             }
             catch (Exception ex)
             {
@@ -148,9 +160,17 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void AddWindowOpen(object sender, RoutedEventArgs e)
         {
-            AddWindow AW = new AddWindow();
-            AW.Show();
-            this.Close();
+            if (this.DW == null)
+            {
+                if (this.CW == null)
+                {
+                    AddWindow AW = new AddWindow();
+                    AW.Show();
+                    this.Close();
+                }
+                else MessageBox.Show("Нельзя открыть окно добавления снимка\nдо закрытия окна изменения снимка", "Внимание!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else MessageBox.Show("Нельзя открыть окно добавления снимка\nдо закрытия окна удаления снимка", "Внимание!", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         
         /// <summary>
@@ -184,8 +204,8 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void DeleteOrigWidowOpen(object sender, RoutedEventArgs e)
         {
-            DeleteWindow DW = new DeleteWindow(Convert.ToInt32(OriginalID), "original", this);
-            DW.Show();
+            this.DW = new DeleteWindow(Convert.ToInt32(OriginalID), "original", this);
+            this.DW.Show();
         }
 
         /// <summary>
@@ -195,8 +215,16 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void DeleteMarkupWindowOpen(object sender, RoutedEventArgs e)
         {
-            DeleteWindow DW = new DeleteWindow(Convert.ToInt32(MarkupID), "markup", this);
-            DW.Show();
+            this.DW = new DeleteWindow(Convert.ToInt32(MarkupID), "markup", this);
+            this.DW.Show();
+        }
+
+        /// <summary>
+        /// Сброс до изображений по умолчанию
+        /// </summary>
+        public void ReloadToDefaultImages()
+        {
+            PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage);
         }
     }
 }

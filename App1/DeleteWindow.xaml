@@ -9,8 +9,7 @@
         Title="Удалить информацию о снимке?" 
         Height="150" Width="370" 
         MinHeight="150" MinWidth="370"
-        MaxHeight="150" MaxWidth="370"
-        Loaded="Window_Loaded">
+        MaxHeight="150" MaxWidth="370">
     <Grid>
 
         <Button Content="Отмена" HorizontalAlignment="Left" VerticalAlignment="Bottom" Click="BackToMain" Height="20" Margin="10"/>

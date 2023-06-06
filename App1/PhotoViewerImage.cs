@@ -11,6 +11,11 @@ namespace PhotoViewerPRCVI
 {
     public partial class PhotoViewerImage
     {
+        //подключение к БД
+        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        static SqlConnection connection = new SqlConnection(connectionString);
+
+        //данные конкретного изображения
         Uri Path;
         string Type;
         int OriginalID;
@@ -122,16 +127,25 @@ namespace PhotoViewerPRCVI
             }
         }
 
+
+
+
+
+
+
+
+
         /// <summary>
-        /// Вывод изображения по пути извлеченному из БД в окно
+        /// Вывод изображения по пути извлеченному из БД в окно с помощью запроса SQL
         /// </summary>
         /// <param name="image">Элемент изображения в окне</param>
         /// <param name="SQL">Запрос по которому извлекается путь к изображению</param>
-        /// <param name="connection">Подключение к БД</param>
-        public static void LoadImage(System.Windows.Controls.Image image, string SQL, SqlConnection connection)
+        public static void LoadImage(System.Windows.Controls.Image image, string SQL)
         {
             try
             {
+                if (connection.State == ConnectionState.Closed)connection.Open();
+
                 //получение пути к изображению из БД
                 SqlCommand command = new SqlCommand(SQL, connection);
                 string imageUri = (string)command.ExecuteScalar();
@@ -144,6 +158,36 @@ namespace PhotoViewerPRCVI
 
                 //вывод изображения из BMP в окно
                 image.Source = myBitmapImage;
+
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Удаление информации о снимке из БД
+        /// </summary>
+        /// <param name="type">Тип снимка</param>
+        /// <param name="ID">ID снимка</param>
+        public static void DeleteImageFromDB(string type, int ID)
+        {
+            try
+            {
+                //открытие подключения
+                connection.Open();
+
+                string SQL;
+
+                //удаление записи из ДБ
+                if (type == "original") SQL = "DELETE FROM dbo.Originals WHERE (OriginalID = " + ID + ")";
+                else SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
+
+                connection.Close();
             }
             catch (Exception ex)
             {
@@ -151,5 +195,43 @@ namespace PhotoViewerPRCVI
             }
         }
 
+        /// <summary>
+        /// Загрузка изображений по умолчанию
+        /// </summary>
+        /// <param name="TheOriginalWindowImage">Элемент оригинального изображения в окне</param>
+        /// <param name="TheMarkupWindowImage">Элемент размеченного изображения в окне</param>
+        public static void LoadDefaultImages(System.Windows.Controls.Image TheOriginalWindowImage, System.Windows.Controls.Image TheMarkupWindowImage)
+        {
+            try
+            {
+                connection.Open();
+
+                string SQL;
+                SqlCommand command;
+                string OriginalID, MarkupID;
+
+                //получение ID оригинального снимка по умолчанию
+                SQL = "SELECT Min(OriginalID) FROM dbo.Originals";
+                command = new SqlCommand(SQL, connection);
+                OriginalID = Convert.ToString(command.ExecuteScalar());
+
+                //получение ID размеченного снимка по умолчанию
+                SQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
+                command = new SqlCommand(SQL, connection);
+                MarkupID = Convert.ToString(command.ExecuteScalar());
+
+                connection.Close();
+
+                //загрузка изображений по умолчанию 
+                SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
+                LoadImage(TheOriginalWindowImage, SQL);
+                SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
+                LoadImage(TheMarkupWindowImage, SQL);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }
