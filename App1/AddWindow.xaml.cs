@@ -71,7 +71,6 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OrigName_Loaded(object sender, RoutedEventArgs e)
         {
-
             try
             {
                 //открытие подключения
@@ -101,6 +100,8 @@ namespace PhotoViewerPRCVI
 
                     OrigName.Items.Add(row.Field<int>("OriginalID").ToString() + ": " + name);
                 }
+
+                if (OrigName.Items.Count > 0) OrigName.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -111,7 +112,33 @@ namespace PhotoViewerPRCVI
                 connection.Close();
             }
         }
-        
+
+        /// <summary>
+        /// Загрузка поля с часами
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HoursBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i <= 23; i++)
+            {
+                hoursBox.Items.Add(i);
+            }
+        }
+
+        /// <summary>
+        /// Загрузка поля с минутами
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MinutesBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i <= 59; i++)
+            {
+                minutesBox.Items.Add(i);
+            }
+        }
+
         /// <summary>
         /// Изменение содержимого окна, когда выбран тип снимка - оригинал
         /// </summary>
@@ -256,8 +283,7 @@ namespace PhotoViewerPRCVI
                 }
             }
         }
-
-        //доделать
+        
         /// <summary>
         /// Сохранить изображение и вернуться в главное окно
         /// </summary>
@@ -267,6 +293,30 @@ namespace PhotoViewerPRCVI
         {
             string AddingPath = AddFileName.Text;
             DateTime AddingDate = DateSelector.DisplayDate;
+            double AddingHours;
+            double AddingMinutes;
+
+            
+            if (hoursBox.Text == "")
+            {
+                AddingHours = 0;
+            }
+            else
+            {
+                AddingHours = Convert.ToDouble(hoursBox.Text);
+            }
+
+            if (minutesBox.Text == "")
+            {
+                AddingMinutes = 0;
+            }
+            else
+            {
+                AddingMinutes = Convert.ToDouble(minutesBox.Text);
+            }
+
+            AddingDate = AddingDate.AddHours(AddingHours);
+            AddingDate = AddingDate.AddMinutes(AddingMinutes);
             string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
 
             if (this.type == "original")
@@ -347,5 +397,7 @@ namespace PhotoViewerPRCVI
             MW.Show();
             this.Close();
         }
+
+        
     }
 }

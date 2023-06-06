@@ -1,6 +1,8 @@
 ﻿using PhotoViewer;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,19 +22,20 @@ namespace PhotoViewerPRCVI
     /// </summary>
     public partial class DeleteWindow : Window
     {
-        string type;
+        //ссылка на главное окно
         MainWindow mw;
+        
+        //cтрока подключения к БД
+        string connectionString;
 
-        /// <summary>
-        /// Конструктор окна удаления информации
-        /// </summary>
-        public DeleteWindow(MainWindow mw)
-        {
-            InitializeComponent();
-            this.type = "markup";
-            this.mw = mw;
-            DeleteWarnLabel.Content = "Удалить информацию о текущем размеченном снимке?";
-        }
+        //подключение к БД
+        SqlConnection connection;
+
+        //тип удаляемого изображения
+        string type;
+
+        //ID удаляемого изображения
+        int ID;
         
         /// <summary>
         /// Конструктор окна удаления информации
@@ -42,6 +45,7 @@ namespace PhotoViewerPRCVI
         public DeleteWindow(int ID, string type, MainWindow mw)
         {
             InitializeComponent();
+            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
             if (type == "markup")
             {
@@ -54,6 +58,25 @@ namespace PhotoViewerPRCVI
                 DeleteWarnLabel.Content = "Удалить информацию о текущем оригинальном снимке?\nИнформация о всех размеченных снимках\nтекущего оригинального также будет удалена!";
             }
             this.mw = mw;
+            this.ID = ID;
+        }
+
+        /// <summary>
+        /// Загрузка окна удаления
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //подключение к БД используя строку подключения
+                connection = new SqlConnection(connectionString);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         /// <summary>
@@ -65,15 +88,47 @@ namespace PhotoViewerPRCVI
         {
             if (type == "original")
             {
-                //удалить оригинальный и все размеченные
-                //перейти на другой в главнм окне
+                try
+                {
+                    //открытие подключения
+                    connection.Open();
+
+                    //добавление записи о снимке в таблицу БД
+                    string SQL = "DELETE FROM dbo.Originals WHERE (OriginalID = " + ID + ")";
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    command.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    connection.Close();
+                }
                 mw.Activate();
                 this.Close();
             }
             else
             {
-                //удалить размеченный
-                //перейти на другой в главном
+                try
+                {
+                    //открытие подключения
+                    connection.Open();
+
+                    //добавление записи о снимке в таблицу БД
+                    string SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    command.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    connection.Close();
+                }
                 mw.Activate();
                 this.Close();
             }
