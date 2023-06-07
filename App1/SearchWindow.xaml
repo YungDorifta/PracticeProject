@@ -7,9 +7,10 @@
         mc:Ignorable="d"
         Title="SearchPhotos" Height="113.336" Width="277.754">
     <Grid>
-        <TextBox x:Name="OriginalID" HorizontalAlignment="Left" Height="23" Margin="10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="MarkupID" HorizontalAlignment="Left" Height="23" Margin="140,10,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <Button Content="Load" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top" Width="250" Height="34" Click="Button_Click"/>
+        <TextBox x:Name="OriginalIDTB" HorizontalAlignment="Left" Height="23" Margin="10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="MarkupIDTB" HorizontalAlignment="Left" Height="23" Margin="140,10,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <Button Content="Back" HorizontalAlignment="Left" Margin="10,38,10,0" VerticalAlignment="Top" Width="120" Height="34" Click="BackToMain"/>
+        <Button Content="Load" HorizontalAlignment="Right" Margin="10,38,10,0" VerticalAlignment="Top" Width="120" Height="34" Click="LoadAndBackToMain"/>
 
     </Grid>
 </Window>

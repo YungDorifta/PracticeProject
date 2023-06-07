@@ -19,13 +19,11 @@ using System.Windows.Shapes;
 /*
 Доделать:
 
-!!!Главная:     вывод доп информаци под фото, надписи где какое фото
-                ссылки на открываемые окна для того, чтобы нельзя было открыть окна одного типа кучу раз
-                (?)связь окон: если открыто окно добавления и удаления, чтобы одно не мешало другому. Либо сделать так, чтобы можно было делать одно действие за один раз
+Главная:     вывод доп информаци под фото
+                надписи где какое фото
 
-!!!Удаление:   смена картинок в главном окне при удалении снимка/ов
 
-Доп. информация: вывод доп информации в таблицу доделать
+Доп. информация: вывод доп информации в таблицу доделать, удалить картинки
 
 Поиск:      поиск изображений по различной информации
 
@@ -35,6 +33,11 @@ using System.Windows.Shapes;
 (?):
 База Данных: добавить доп. поля 
 Везде:      адаптивное изображение и размеры
+
+
+Сделано:
+Окно добавления 
+Окно удаления
 */
 
 namespace PhotoViewer
@@ -44,38 +47,42 @@ namespace PhotoViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        //cтрока подключения к БД
-        string connectionString;
-
-        //OriginalID изображений
-        string OriginalID, MarkupID;
+        //ID изображений
+        public string OriginalID, MarkupID;
 
         //ссылки на функциональные окна
+        public FullInfoWindow FIW;
         public ChangeWindow CW;
         public DeleteWindow DW;
 
         /// <summary>
-        /// Конструктор главного окна
+        /// Конструктор главного окна по умолчанию
         /// </summary>
         public MainWindow()
         {
             InitializeComponent();
-            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
             this.OriginalID = null;
             this.MarkupID = null;
+
+            FIW = null;
+            CW = null;
+            DW = null;
         }
 
         /// <summary>
-        /// Конструктор главного окна 
+        /// Конструктор главного окна с указанными избражениями
         /// </summary>
         /// <param name="OriginalID">ID оригинального изображения</param>
         /// <param name="MarkupID">ID размеченного изображения</param>
-        public MainWindow(string OriginalID, string MarkupID)
+        public MainWindow(int OriginalID, int MarkupID)
         {
             InitializeComponent();
-            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            this.OriginalID = OriginalID;
-            this.MarkupID = MarkupID;
+            this.OriginalID = Convert.ToString(OriginalID);
+            this.MarkupID = Convert.ToString(MarkupID);
+
+            FIW = null;
+            CW = null;
+            DW = null;
         }
         
         /// <summary>
@@ -85,46 +92,31 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //сброс соединения
-            SqlConnection connection = null;
-
             try
             {
-                //подключение к БД используя строку подключения
-                connection = new SqlConnection(connectionString);
-
-                //открытие подключения
-                connection.Open();
-
+                //загрузить картики по умлчанию
                 if (OriginalID == null || MarkupID == null)
                 {
-                    string PreSQL = "SELECT Min(OriginalID) FROM dbo.Originals";
-                    SqlCommand preCommand = new SqlCommand(PreSQL, connection);
-                    OriginalID = Convert.ToString(preCommand.ExecuteScalar());
-                    PreSQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
-                    preCommand = new SqlCommand(PreSQL, connection);
-                    MarkupID = Convert.ToString(preCommand.ExecuteScalar());
+                    PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage, this);
                 }
+                //иначе - вывести картинки с индексами из полей
+                else
+                {
+                    //вывод картинок по путям из БД
+                    string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
+                    PhotoViewerImage.LoadImage(TheOriginalWindowImage, SQL);
+                    SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
+                    PhotoViewerImage.LoadImage(TheMarkupWindowImage, SQL);
 
-                //вывод картинок по путям из БД
-                string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-                PhotoViewerImage.LoadImage(TheOriginalWindowImage, SQL);
-                SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
-                PhotoViewerImage.LoadImage(TheMarkupWindowImage, SQL);
-                
-                //PhotoViewerImage Orig = new PhotoViewerImage(1, connection);
-                //Orig.LoadImage(TheOriginalWindowImage);
-                //PhotoViewerImage Mark = new PhotoViewerImage(1, 1, connection);
-                //Mark.LoadImage(TheMarkupWindowImage);
+                    //PhotoViewerImage Orig = new PhotoViewerImage(1, connection);
+                    //Orig.LoadImage(TheOriginalWindowImage);
+                    //PhotoViewerImage Mark = new PhotoViewerImage(1, 1, connection);
+                    //Mark.LoadImage(TheMarkupWindowImage);
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (connection != null)
-                    connection.Close();
             }
         }
 
@@ -135,42 +127,85 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void InfoWindowOpen(object sender, RoutedEventArgs e)
         {
-            Button Btn = (Button)sender;
-            FullInfoWindow FIW = new FullInfoWindow(2, 2);
-            FIW.Show();
-            this.Close();
+            //закрыть все вспомогательные окна
+            if (this.DW != null)
+            {
+                this.DW.Close();
+                this.DW = null;
+            }
+            if (this.CW != null)
+            {
+                this.CW.Close();
+                this.CW = null;
+            }
+
+            //открыть окно полной информации, если его нет, если есть - переключиться на него
+            if (this.FIW == null)
+            {
+                FIW = new FullInfoWindow(Convert.ToInt32(this.OriginalID), Convert.ToInt32(this.MarkupID), this);
+                FIW.Show();
+            }
+            else this.FIW.Focus();
         }
         
         /// <summary>
-        /// Поиск изображений
+        /// Поиск изображений (закрывает главное окно)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void SearchPhotosClick(object sender, RoutedEventArgs e)
         {
+            //закрыть все вспомогательные окна
+            if (this.DW != null)
+            {
+                this.DW.Close();
+                this.DW = null;
+            }
+            if (this.CW != null)
+            {
+                this.CW.Close();
+                this.CW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно поиска снимков
             SearchPhotos SPW = new SearchPhotos(OriginalID, MarkupID);
             SPW.Show();
             this.Close();
         }
 
         /// <summary>
-        /// Добавить оригинал
+        /// Добавить снимок (закрывает главное окно)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void AddWindowOpen(object sender, RoutedEventArgs e)
         {
-            if (this.DW == null)
+            //закрыть все вспомогательные окна
+            if (this.DW != null)
             {
-                if (this.CW == null)
-                {
-                    AddWindow AW = new AddWindow();
-                    AW.Show();
-                    this.Close();
-                }
-                else MessageBox.Show("Нельзя открыть окно добавления снимка\nдо закрытия окна изменения снимка", "Внимание!", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.DW.Close();
+                this.DW = null;
             }
-            else MessageBox.Show("Нельзя открыть окно добавления снимка\nдо закрытия окна удаления снимка", "Внимание!", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (this.CW != null)
+            {
+                this.CW.Close();
+                this.CW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно добавления фотографий
+            AddWindow AW = new AddWindow();
+            AW.Show();
+            this.Close();
         }
         
         /// <summary>
@@ -180,9 +215,25 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void ChangeOrigWindowOpen(object sender, RoutedEventArgs e)
         {
-            ChangeWindow CW = new ChangeWindow(Convert.ToInt32(OriginalID), "original");
-            CW.Show();
-            this.Close();
+            //закрыть все вспомогательные окна
+            if (this.DW != null)
+            {
+                this.DW.Close();
+                this.DW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно изменения, если его еще нет
+            if (this.CW == null)
+            {
+                this.CW = new ChangeWindow(Convert.ToInt32(OriginalID), "original", this);
+                this.CW.Show();
+            }
+            else this.CW.Focus();
         }
 
         /// <summary>
@@ -192,11 +243,27 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void ChangeMarkupWindowOpen(object sender, RoutedEventArgs e)
         {
-            ChangeWindow CW = new ChangeWindow(Convert.ToInt32(MarkupID), "markup");
-            CW.Show();
-            this.Close();
+            //закрыть все вспомогательные окна
+            if (this.DW != null)
+            {
+                this.DW.Close();
+                this.DW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно изменения, если его еще нет
+            if (this.CW == null)
+            {
+                this.CW = new ChangeWindow(Convert.ToInt32(MarkupID), "markup", this);
+                this.CW.Show();
+            }
+            else this.CW.Focus();
         }
-        
+
         /// <summary>
         /// Удалить оригинал
         /// </summary>
@@ -204,8 +271,25 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void DeleteOrigWidowOpen(object sender, RoutedEventArgs e)
         {
-            this.DW = new DeleteWindow(Convert.ToInt32(OriginalID), "original", this);
-            this.DW.Show();
+            //закрыть все вспомогательные окна
+            if (this.CW != null)
+            {
+                this.CW.Close();
+                this.CW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно удаления, если его нет
+            if (this.DW == null)
+            {
+                this.DW = new DeleteWindow(Convert.ToInt32(OriginalID), "original", this);
+                this.DW.Show();
+            }
+            else this.DW.Focus();
         }
 
         /// <summary>
@@ -215,8 +299,25 @@ namespace PhotoViewer
         /// <param name="e"></param>
         private void DeleteMarkupWindowOpen(object sender, RoutedEventArgs e)
         {
-            this.DW = new DeleteWindow(Convert.ToInt32(MarkupID), "markup", this);
-            this.DW.Show();
+            //закрыть все вспомогательные окна
+            if (this.CW != null)
+            {
+                this.CW.Close();
+                this.CW = null;
+            }
+            if (this.FIW != null)
+            {
+                this.FIW.Close();
+                this.FIW = null;
+            }
+
+            //открыть окно удаления, если его нет
+            if (this.DW == null)
+            {
+                this.DW = new DeleteWindow(Convert.ToInt32(MarkupID), "markup", this);
+                this.DW.Show();
+            }
+            else this.DW.Focus();
         }
 
         /// <summary>
@@ -224,7 +325,7 @@ namespace PhotoViewer
         /// </summary>
         public void ReloadToDefaultImages()
         {
-            PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage);
+            PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage, this);
         }
     }
 }

@@ -15,29 +15,74 @@ using System.Windows.Shapes;
 
 namespace PhotoViewerPRCVI
 {
+    
     /// <summary>
     /// Логика взаимодействия для SearchPhotos.xaml
     /// </summary>
     public partial class SearchPhotos : Window
     {
-        public SearchPhotos(string Orig, string Mark)
+        //ID снимков с главного окна
+        string OriginalID, MarkupID;
+
+        /// <summary>
+        /// Конструктор окна поиска снимков
+        /// </summary>
+        /// <param name="OriginalID"></param>
+        /// <param name="MarkupID"></param>
+        public SearchPhotos(string OriginalID, string MarkupID)
         {
             InitializeComponent();
-            OriginalID.Text = Orig;
-            MarkupID.Text = Mark;
+            OriginalIDTB.Text = OriginalID;
+            MarkupIDTB.Text = MarkupID;
+            this.OriginalID = OriginalID;
+            this.MarkupID = MarkupID;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Загрузка главного окна с найденными снимками
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LoadAndBackToMain(object sender, RoutedEventArgs e)
         {
             MainWindow MW;
 
             try
             {
-                MW = new MainWindow(OriginalID.Text, MarkupID.Text);
+                MW = new MainWindow(Convert.ToInt32(OriginalIDTB.Text), Convert.ToInt32(MarkupIDTB.Text));
+
                 if(MW == null)
                 {
-                    MW = new MainWindow("1", "1");
+                    MW = new MainWindow();
                 }
+
+                MW.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Загрузка главного окна с прошлыми снимками
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackToMain(object sender, RoutedEventArgs e)
+        {
+            MainWindow MW;
+
+            try
+            {
+                MW = new MainWindow(Convert.ToInt32(OriginalID), Convert.ToInt32(MarkupID));
+
+                if (MW == null)
+                {
+                    MW = new MainWindow();
+                }
+
                 MW.Show();
                 this.Close();
             }

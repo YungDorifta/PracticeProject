@@ -48,9 +48,22 @@ namespace PhotoViewerPRCVI
         private void DeleteAndBackToMain(object sender, RoutedEventArgs e)
         {
             PhotoViewerImage.DeleteImageFromDB(type, ID);
-            MW.ReloadToDefaultImages();
-            MW.Activate();
+
+            //проверка загрузки главного окна, восстановление если окно закрыто
+            if (this.MW.IsLoaded)
+            {
+                MW.ReloadToDefaultImages();
+                MW.Focus();
+            }
+            else
+            {
+                this.MW = new MainWindow();
+                this.MW.Show();
+            }
             this.Close();
+
+            //сброс информации об открытом окне удаления
+            this.MW.DW = null;
         }
 
         /// <summary>
@@ -60,8 +73,21 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void BackToMain(object sender, RoutedEventArgs e)
         {
-            MW.Activate();
+            //проверка загрузки главного окна, восстановление если окно закрыто
+            if (this.MW.IsLoaded)
+            {
+                MW.ReloadToDefaultImages();
+                MW.Focus();
+            }
+            else
+            {
+                this.MW = new MainWindow();
+                this.MW.Show();
+            }
             this.Close();
+
+            //сброс информации об открытом окне удаления
+            this.MW.DW = null;
         }
     }
 }

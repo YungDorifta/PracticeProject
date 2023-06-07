@@ -6,21 +6,20 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Media.Imaging;
 using static System.Net.Mime.MediaTypeNames;
+using PhotoViewer;
 
 namespace PhotoViewerPRCVI
 {
     public partial class PhotoViewerImage
     {
-        //подключение к БД
-        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-        static SqlConnection connection = new SqlConnection(connectionString);
+        //не используется
 
         //данные конкретного изображения
         Uri Path;
         string Type;
         int OriginalID;
         int MarkupID;
-        DateTime date;
+        //DateTime date;
 
         /// <summary>
         /// Конструктор объекта оригинального сниимка, содержащего данные
@@ -80,7 +79,7 @@ namespace PhotoViewerPRCVI
         /// Проверка снимка: оригинал или разметка
         /// </summary>
         /// <returns></returns>
-        public bool isOriginal()
+        public bool IsOriginal()
         {
             if (this.Type == "original") return true;
             else return false;
@@ -90,7 +89,7 @@ namespace PhotoViewerPRCVI
         /// Получение ID оригинального фото
         /// </summary>
         /// <returns></returns>
-        public int getOriginalID()
+        public int GetOriginalID()
         {
             return this.OriginalID;
         }
@@ -99,7 +98,7 @@ namespace PhotoViewerPRCVI
         /// Получение ID размеченного фото
         /// </summary>
         /// <returns></returns>
-        public int getMarkupID()
+        public int GetMarkupID()
         {
             return this.MarkupID;
         }
@@ -133,7 +132,11 @@ namespace PhotoViewerPRCVI
 
 
 
+        //использующееся на данный момент
 
+        //подключение к БД
+        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        static SqlConnection connection = new SqlConnection(connectionString);
 
         /// <summary>
         /// Вывод изображения по пути извлеченному из БД в окно с помощью запроса SQL
@@ -158,15 +161,64 @@ namespace PhotoViewerPRCVI
 
                 //вывод изображения из BMP в окно
                 image.Source = myBitmapImage;
-
-                connection.Close();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
         }
-        
+
+        /// <summary>
+        /// Вывод информации из таблицы БД в таблицу в окне
+        /// </summary>
+        /// <param name="table">Элемент таблицы в окне</param>
+        /// <param name="SQL">Запрос для извлечения данных</param>
+        /// <param name="connection">Подключение к БД</param>
+        public static void LoadTable(DataGrid table, string SQL)
+        {
+            try
+            {
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //таблица для хранения информации, извлеченной из БД
+                DataTable keepTable = new DataTable();
+
+                //полная команда (SQL query + connection query) для извлечения информации
+                SqlCommand command = new SqlCommand(SQL, connection);
+
+                //адаптер для извлечения информации из БД в Таблицу
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+                // установка команды на добавление для вызова хранимой процедуры
+                adapter.InsertCommand = new SqlCommand("DateAndPicturepath", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 50, "Picturepath"));
+
+                //???
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 1, "OriginalID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //заполнение адаптером таблицы хранения информации из БД
+                adapter.Fill(keepTable);
+
+                //заполнение элемента таблицы информацией из таблицы хранения
+                table.ItemsSource = keepTable.DefaultView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+
         /// <summary>
         /// Удаление информации о снимке из БД
         /// </summary>
@@ -186,12 +238,14 @@ namespace PhotoViewerPRCVI
                 else SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
-
-                connection.Close();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
             }
         }
 
@@ -200,11 +254,11 @@ namespace PhotoViewerPRCVI
         /// </summary>
         /// <param name="TheOriginalWindowImage">Элемент оригинального изображения в окне</param>
         /// <param name="TheMarkupWindowImage">Элемент размеченного изображения в окне</param>
-        public static void LoadDefaultImages(System.Windows.Controls.Image TheOriginalWindowImage, System.Windows.Controls.Image TheMarkupWindowImage)
+        public static void LoadDefaultImages(System.Windows.Controls.Image TheOriginalWindowImage, System.Windows.Controls.Image TheMarkupWindowImage, MainWindow MW)
         {
             try
             {
-                connection.Open();
+                if (connection.State == ConnectionState.Closed) connection.Open();
 
                 string SQL;
                 SqlCommand command;
@@ -214,13 +268,13 @@ namespace PhotoViewerPRCVI
                 SQL = "SELECT Min(OriginalID) FROM dbo.Originals";
                 command = new SqlCommand(SQL, connection);
                 OriginalID = Convert.ToString(command.ExecuteScalar());
+                MW.OriginalID = OriginalID;
 
                 //получение ID размеченного снимка по умолчанию
                 SQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
                 command = new SqlCommand(SQL, connection);
                 MarkupID = Convert.ToString(command.ExecuteScalar());
-
-                connection.Close();
+                MW.MarkupID = MarkupID;
 
                 //загрузка изображений по умолчанию 
                 SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
@@ -232,6 +286,20 @@ namespace PhotoViewerPRCVI
             {
                 MessageBox.Show(ex.Message);
             }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
         }
+
+        /* 
+        что нужно:
+
+        -вывод изображений по умолчанию (поиск ID самостоятельно)
+        -вывод изображений по указанным ID;
+        -удаление инфо картинки из БД
+        -изменение инфо о картинке
+        -поиск всех ID оригиналов/разметок, связанных с оригиналом
+        */
     }
 }

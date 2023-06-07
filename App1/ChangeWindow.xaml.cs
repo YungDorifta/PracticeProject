@@ -20,24 +20,30 @@ namespace PhotoViewerPRCVI
     /// </summary>
     public partial class ChangeWindow : Window
     {
+        //тип изменяемого фото
         string type;
+
+        //ссылка на главное окно
+        MainWindow MW;
 
         /// <summary>
         /// Конструктор окна для изменения информации о снимке
         /// </summary>
-        public ChangeWindow()
+        public ChangeWindow(MainWindow MW)
         {
             InitializeComponent();
             type = "original";
             this.Title = "Изменить информацию об оригинальном снимке";
+            this.MW = MW;
         }
 
         /// <summary>
         /// Конструктор окна для изменения информации о снимке
         /// </summary>
-        public ChangeWindow(int ID, string type)
+        public ChangeWindow(int ID, string type, MainWindow MW)
         {
             InitializeComponent();
+            this.MW = MW;
 
             if (type == "markup")
             {
@@ -58,9 +64,17 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void SaveAndBackToMain(object sender, RoutedEventArgs e)
         {
-            MainWindow MW = new MainWindow();
-            MW.Show();
+            //проверка загрузки главного окна, восстановление если окно закрыто
+            if (this.MW.IsLoaded) MW.Focus();
+            else
+            {
+                this.MW = new MainWindow();
+                this.MW.Show();
+            }
             this.Close();
+
+            //сброс информации об открытом окне изменения
+            this.MW.CW = null;
         }
 
         /// <summary>
@@ -70,9 +84,17 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void BackToMain(object sender, RoutedEventArgs e)
         {
-            MainWindow MW = new MainWindow();
-            MW.Show();
+            //проверка загрузки главного окна, восстановление если окно закрыто
+            if (this.MW.IsLoaded) MW.Focus();
+            else
+            {
+                this.MW = new MainWindow();
+                this.MW.Show();
+            }
             this.Close();
+
+            //сброс информации об открытом окне изменения
+            this.MW.CW = null;
         }
     }
 }
