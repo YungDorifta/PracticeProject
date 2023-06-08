@@ -47,7 +47,7 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void DeleteAndBackToMain(object sender, RoutedEventArgs e)
         {
-            PhotoViewerImage.DeleteImageFromDB(type, ID);
+            PhotoViewerImage.DeleteImageInDB(type, ID);
 
             //проверка загрузки главного окна, восстановление если окно закрыто
             if (this.MW.IsLoaded)

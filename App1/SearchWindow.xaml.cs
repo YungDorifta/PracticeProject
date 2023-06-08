@@ -38,6 +38,20 @@ namespace PhotoViewerPRCVI
             this.MarkupID = MarkupID;
         }
 
+        //доделать
+
+        /// <summary>
+        /// Загрузка названий оригиналов при загрузке
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OriginalIDTB_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+        
+        //(конец того, что нужно доделать)
+
         /// <summary>
         /// Загрузка главного окна с найденными снимками
         /// </summary>
@@ -47,13 +61,18 @@ namespace PhotoViewerPRCVI
         {
             MainWindow MW;
 
+            OriginalID = OriginalIDTB.Text.Split(':')[0];
+            MarkupID = MarkupIDTB.Text.Split(':')[0];
+            
             try
             {
-                MW = new MainWindow(Convert.ToInt32(OriginalIDTB.Text), Convert.ToInt32(MarkupIDTB.Text));
-
-                if(MW == null)
+                if(OriginalID == null || MarkupID == null)
                 {
                     MW = new MainWindow();
+                }
+                else
+                {
+                    MW = new MainWindow(Convert.ToInt32(OriginalID), Convert.ToInt32(MarkupID));
                 }
 
                 MW.Show();
@@ -64,7 +83,7 @@ namespace PhotoViewerPRCVI
                 MessageBox.Show(ex.Message);
             }
         }
-
+        
         /// <summary>
         /// Загрузка главного окна с прошлыми снимками
         /// </summary>

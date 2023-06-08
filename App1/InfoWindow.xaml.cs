@@ -42,7 +42,7 @@ namespace PhotoViewer
             {
                 //заполнение таблицы информацией
                 string SQL = "SELECT * FROM dbo.Originals";
-                PhotoViewerImage.LoadTable(FullInfoTable, SQL);
+                PhotoViewerImage.LoadTableInInfo(FullInfoTable, SQL);
             }
             catch (Exception ex)
             {

@@ -1,20 +1,7 @@
 ﻿using PhotoViewer;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace PhotoViewerPRCVI
 {
@@ -23,12 +10,6 @@ namespace PhotoViewerPRCVI
     /// </summary>
     public partial class AddWindow : Window
     {
-        //cтрока подключения к БД
-        string connectionString;
-
-        //подключение к БД
-        SqlConnection connection;
-
         //тип добавляемого снимка
         string type;
 
@@ -38,8 +19,6 @@ namespace PhotoViewerPRCVI
         public AddWindow()
         {
             InitializeComponent();
-            connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-
             type = "original";
             this.Title = "Добавить оригинальный снимок";
         }
@@ -52,16 +31,6 @@ namespace PhotoViewerPRCVI
         private void AddWindowLoading(object sender, RoutedEventArgs e)
         {
             SelectType.SelectedIndex = 0;
-
-            try
-            {
-                //подключение к БД используя строку подключения
-                connection = new SqlConnection(connectionString);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
         }
         
         /// <summary>
@@ -71,46 +40,12 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OrigName_Loaded(object sender, RoutedEventArgs e)
         {
-            try
+            string[] names = PhotoViewerImage.FindImageNamesAndIDs("original");
+            foreach (string name in names)
             {
-                //открытие подключения
-                connection.Open();
-
-                //получение ID и названия оригиналов из БД 
-                string SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals";
-                SqlCommand command = new SqlCommand(SQL, connection);
-
-                SqlDataAdapter adapter = new SqlDataAdapter(command);
-                adapter.InsertCommand = new SqlCommand("IDandPath", connection);
-                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
-                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
-                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 10, "OriginalID");
-                parameter.Direction = ParameterDirection.Output;
-
-                //вывод в таблицу хранения
-                DataTable IDPathTable = new DataTable();
-                adapter.Fill(IDPathTable);
-
-                //вывод ID оригиналов в item
-                foreach (DataRow row in IDPathTable.Rows)
-                {
-                    string path = row.Field<string>("Picturepath");
-                    string[] pathsplit = path.Split('\\');
-                    string name = pathsplit[pathsplit.Length - 1];
-
-                    OrigName.Items.Add(row.Field<int>("OriginalID").ToString() + ": " + name);
-                }
-
-                if (OrigName.Items.Count > 0) OrigName.SelectedIndex = 0;
+                OrigName.Items.Add(name);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                connection.Close();
-            }
+            if (OrigName.Items.Count > 0) OrigName.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -188,19 +123,21 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void FindAddImagePath(object sender, RoutedEventArgs e)
         {
-            // Configure open file dialog box
+            // Открыть диалоговое окно
             var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.FileName = "Image"; // Default file name
-            dialog.DefaultExt = ".jpg"; // Default file extension
-            dialog.Filter = "Images (.jpg)|*.jpg"; // Filter files by extension
+            // Имя файла по умолчанию
+            dialog.FileName = "Image";
+            // Расширение файла по умолчанию
+            dialog.DefaultExt = ".jpg";
+            // Фильтр файлоа по расширению
+            dialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG)|*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG|All files (*.*)|*.*"; 
 
-            // Show open file dialog box
+            // Открыть диалоговое окно и по окончанию работы проверить результат
             bool? result = dialog.ShowDialog();
 
-            // Process open file dialog box results
+            // Внести имя файла в поле при наличии результата
             if (result == true)
             {
-                // Open document
                 string filename = dialog.FileName;
                 AddFileName.Text = filename;
             }
@@ -291,12 +228,13 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void SaveAndBackToMain(object sender, RoutedEventArgs e)
         {
+            //данные для новой записи о снимке
             string AddingPath = AddFileName.Text;
             DateTime AddingDate = DateSelector.DisplayDate;
             double AddingHours;
             double AddingMinutes;
 
-            
+            //корректировка времени при отсутствии заполнения полей
             if (hoursBox.Text == "")
             {
                 AddingHours = 0;
@@ -305,7 +243,6 @@ namespace PhotoViewerPRCVI
             {
                 AddingHours = Convert.ToDouble(hoursBox.Text);
             }
-
             if (minutesBox.Text == "")
             {
                 AddingMinutes = 0;
@@ -315,72 +252,24 @@ namespace PhotoViewerPRCVI
                 AddingMinutes = Convert.ToDouble(minutesBox.Text);
             }
 
+            //добавление в дату времени
             AddingDate = AddingDate.AddHours(AddingHours);
             AddingDate = AddingDate.AddMinutes(AddingMinutes);
-            string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
 
+            //добавление записи о снимке
             if (this.type == "original")
             {
                 string AddingSputnik = Sputnik.Text;
                 string AddingRegion = Region.Text;
-
-                try
-                {
-                    //открытие подключения
-                    connection.Open();
-
-                    //поиск доступного ID для добавления картинки
-                    string SQL = "SELECT MAX(OriginalID) FROM dbo.Originals";
-                    SqlCommand command = new SqlCommand(SQL, connection);
-                    int newID = (int)command.ExecuteScalar();
-                    newID++;
-
-                    //добавление записи о снимке в таблицу БД
-                    SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
-                          AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
-                    command = new SqlCommand(SQL, connection);
-                    command.ExecuteScalar();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-                finally
-                {
-                    connection.Close();
-                }
+                PhotoViewerImage.AddOriginalImageInDB(AddingPath, AddingDate, AddingSputnik, AddingRegion);
             }
             else if (this.type == "markup")
             {
                 int AddingOriginalID = Convert.ToInt32(OrigName.Text.Split(':')[0]);
-
-                try
-                {
-                    //открытие подключения
-                    connection.Open();
-
-                    //поиск доступного ID для добавления картинки
-                    string SQL = "SELECT MAX(MarkupID) FROM dbo.Markups";
-                    SqlCommand command = new SqlCommand(SQL, connection);
-                    int newID = (int)command.ExecuteScalar();
-                    newID++;
-
-                    //добавление записи о снимке в таблицу БД
-                    SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," + 
-                        AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath +"');";
-                    command = new SqlCommand(SQL, connection);
-                    command.ExecuteScalar();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-                finally
-                {
-                    connection.Close();
-                }
+                PhotoViewerImage.AddMarkupImageInDB(AddingPath, AddingDate, AddingOriginalID);
             }
 
+            //завершение работы окна
             MainWindow MW = new MainWindow();
             MW.Show();
             this.Close();
@@ -397,7 +286,5 @@ namespace PhotoViewerPRCVI
             MW.Show();
             this.Close();
         }
-
-        
     }
 }

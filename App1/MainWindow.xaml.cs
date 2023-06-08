@@ -97,7 +97,7 @@ namespace PhotoViewer
                 //загрузить картики по умлчанию
                 if (OriginalID == null || MarkupID == null)
                 {
-                    PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage, this);
+                    PhotoViewerImage.LoadDefaultImagesInMain(TheOriginalWindowImage, TheMarkupWindowImage, this);
                 }
                 //иначе - вывести картинки с индексами из полей
                 else
@@ -325,7 +325,7 @@ namespace PhotoViewer
         /// </summary>
         public void ReloadToDefaultImages()
         {
-            PhotoViewerImage.LoadDefaultImages(TheOriginalWindowImage, TheMarkupWindowImage, this);
+            PhotoViewerImage.LoadDefaultImagesInMain(TheOriginalWindowImage, TheMarkupWindowImage, this);
         }
     }
 }

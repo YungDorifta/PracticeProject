@@ -5,12 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
-        Title="SearchPhotos" Height="113.336" Width="277.754">
-    <Grid>
-        <TextBox x:Name="OriginalIDTB" HorizontalAlignment="Left" Height="23" Margin="10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="MarkupIDTB" HorizontalAlignment="Left" Height="23" Margin="140,10,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <Button Content="Back" HorizontalAlignment="Left" Margin="10,38,10,0" VerticalAlignment="Top" Width="120" Height="34" Click="BackToMain"/>
-        <Button Content="Load" HorizontalAlignment="Right" Margin="10,38,10,0" VerticalAlignment="Top" Width="120" Height="34" Click="LoadAndBackToMain"/>
+        
+        Title="Найти снимок" Height="335" Width="300"
+        MinHeight="335"
+        MaxHeight="335">
+    <Grid ShowGridLines="True" Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
 
+        <Grid Grid.Row="0">
+            <Label Content="Оригинальный снимок" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5, 5,0,0"/>
+            <Label Content="Размеченный снимок" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,40,0,0"/>
+            
+            <ComboBox x:Name="OriginalIDTB" HorizontalAlignment="Right" Height="25" Margin="0,5,5,0" Text="TextBox" VerticalAlignment="Top" Width="120" Loaded="OriginalIDTB_Loaded"/>
+            <ComboBox x:Name="MarkupIDTB" HorizontalAlignment="Right" Height="25" Margin="0,40,5,0" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        </Grid>
+
+        <Label Grid.Row="1" Content="Дополнительные фильтры для поиска:" HorizontalAlignment="Center" FontWeight="Bold"/>
+
+        <Grid Grid.Row="2">
+            <Label Content="Дата съемки оригинала" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,0,0"/>
+            <Label Content="Дата создания разметки" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,45,0,0"/>
+            <Label Content="Регион" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,80,0,0"/>
+            <Label Content="Спутник" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,115,0,0"/>
+
+            <ComboBox x:Name="OrigDate" HorizontalAlignment="Right" Height="25" Margin="0,10,5,0" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+            <ComboBox x:Name="MarkupDate" HorizontalAlignment="Right" Height="25" Margin="0,45,5,0" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+            <ComboBox x:Name="Region" HorizontalAlignment="Right" Height="25" Margin="0,80,5,0" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+            <ComboBox x:Name="Sputnik" HorizontalAlignment="Right" Height="25" Margin="0,115,5,0" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        </Grid>
+
+        <Grid Grid.Row="3">
+            <Button Content="Отмена" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,5" Height="25" Width="100" Click="BackToMain"/>
+            <Button Content="Найти" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Height="25" Width="100" Click="LoadAndBackToMain"/>
+        </Grid>
     </Grid>
 </Window>
