@@ -24,6 +24,8 @@ namespace PhotoViewerPRCVI
         string Region;
         Uri Path;
 
+        //методы для объекта класса
+
         /// <summary>
         /// Конструктор объекта снимка
         /// </summary>
@@ -155,81 +157,36 @@ namespace PhotoViewerPRCVI
                 MessageBox.Show(ex.Message);
             }
         }
-        
-        
 
-        
-        
+
+        //статические методы для действий с БД
+
         /// <summary>
-        /// Вывод изображения по пути извлеченному из БД в окно с помощью запроса SQL
+        /// Добавление оригинального снимка в БД
         /// </summary>
-        /// <param name="image">Элемент изображения в окне</param>
-        /// <param name="SQL">Запрос по которому извлекается путь к изображению</param>
-        public static void LoadImage(System.Windows.Controls.Image image, string SQL)
+        /// <param name="AddingPath">Путь к изображению</param>
+        /// <param name="AddingDate">Дата создания снимка</param>
+        /// <param name="AddingSputnik">Спутник, с которого сделан снимок</param>
+        /// <param name="AddingRegion">Регион, в котором сделан снимок</param>
+        public static void AddOriginalImageInDB(string AddingPath, DateTime AddingDate, string AddingSputnik, string AddingRegion)
         {
             try
             {
-                if (connection.State == ConnectionState.Closed)connection.Open();
-
-                //получение пути к изображению из БД
-                SqlCommand command = new SqlCommand(SQL, connection);
-                string imageUri = (string)command.ExecuteScalar();
-
-                //вывод изображения из БД в BMP
-                BitmapImage myBitmapImage = new BitmapImage();
-                myBitmapImage.BeginInit();
-                myBitmapImage.UriSource = new Uri(imageUri);
-                myBitmapImage.EndInit();
-
-                //вывод изображения из BMP в окно
-                image.Source = myBitmapImage;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open) connection.Close();
-            }
-        }
-
-        /// <summary>
-        /// Вывод информации из таблицы БД в таблицу в окне
-        /// </summary>
-        /// <param name="table">Элемент таблицы в окне</param>
-        /// <param name="SQL">Запрос для извлечения данных</param>
-        /// <param name="connection">Подключение к БД</param>
-        public static void LoadTableInInfo(DataGrid table, string SQL)
-        {
-            try
-            {
+                //открытие подключения
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
-                //таблица для хранения информации, извлеченной из БД
-                DataTable keepTable = new DataTable();
-
-                //полная команда (SQL query + connection query) для извлечения информации
+                //поиск доступного ID для добавления картинки
+                string SQL = "SELECT MAX(OriginalID) FROM dbo.Originals";
                 SqlCommand command = new SqlCommand(SQL, connection);
+                int newID = (int)command.ExecuteScalar();
+                newID++;
 
-                //адаптер для извлечения информации из БД в Таблицу
-                SqlDataAdapter adapter = new SqlDataAdapter(command);
-
-                // установка команды на добавление для вызова хранимой процедуры
-                adapter.InsertCommand = new SqlCommand("DateAndPicturepath", connection);
-                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
-                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
-                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 50, "Picturepath"));
-
-                //???
-                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 1, "OriginalID");
-                parameter.Direction = ParameterDirection.Output;
-
-                //заполнение адаптером таблицы хранения информации из БД
-                adapter.Fill(keepTable);
-
-                //заполнение элемента таблицы информацией из таблицы хранения
-                table.ItemsSource = keepTable.DefaultView;
+                //добавление записи о снимке в таблицу БД
+                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
+                SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
+                      AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
+                command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
             }
             catch (Exception ex)
             {
@@ -242,11 +199,82 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
-        /// Загрузка изображений по умолчанию
+        /// Добавление размеченного снимка в БД
+        /// </summary>
+        /// <param name="AddingPath">Путь к изображению</param>
+        /// <param name="AddingDate">Дата разметки снимка</param>
+        /// <param name="AddingOriginalID">ID оригинального снимка</param>
+        public static void AddMarkupImageInDB(string AddingPath, DateTime AddingDate, int AddingOriginalID)
+        {
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //поиск доступного ID для добавления картинки
+                string SQL = "SELECT MAX(MarkupID) FROM dbo.Markups";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int newID = (int)command.ExecuteScalar();
+                newID++;
+
+                //добавление записи о снимке в таблицу БД
+                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
+                SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," +
+                    AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath + "');";
+                command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+
+        //!!! изменение информации о снимке
+
+        /// <summary>
+        /// Удаление информации о снимке из БД
+        /// </summary>
+        /// <param name="type">Тип снимка</param>
+        /// <param name="ID">ID снимка</param>
+        public static void DeleteImageInDB(string type, int ID)
+        {
+            try
+            {
+                //открытие подключения
+                connection.Open();
+
+                string SQL;
+
+                //удаление записи из ДБ
+                if (type == "original") SQL = "DELETE FROM dbo.Originals WHERE (OriginalID = " + ID + ")";
+                else SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+
+
+        //статические методы для прогрузки информации в окне
+
+        /// <summary>
+        /// Сброс до изображений по умолчанию в главном окне
         /// </summary>
         /// <param name="TheOriginalWindowImage">Элемент оригинального изображения в окне</param>
         /// <param name="TheMarkupWindowImage">Элемент размеченного изображения в окне</param>
-        public static void LoadDefaultImagesInMain(System.Windows.Controls.Image TheOriginalWindowImage, System.Windows.Controls.Image TheMarkupWindowImage, MainWindow MW)
+        public static void ResetToDefaultImagesInMain(MainWindow MW)
         {
             try
             {
@@ -254,25 +282,19 @@ namespace PhotoViewerPRCVI
 
                 string SQL;
                 SqlCommand command;
-                string OriginalID, MarkupID;
+                int OriginalID, MarkupID;
 
                 //получение ID оригинального снимка по умолчанию
                 SQL = "SELECT Min(OriginalID) FROM dbo.Originals";
                 command = new SqlCommand(SQL, connection);
-                OriginalID = Convert.ToString(command.ExecuteScalar());
-                MW.OriginalID = OriginalID;
+                OriginalID = (int)command.ExecuteScalar();
+                MW.OriginalImage = new PhotoViewerImage("original", OriginalID);
 
                 //получение ID размеченного снимка по умолчанию
                 SQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
                 command = new SqlCommand(SQL, connection);
-                MarkupID = Convert.ToString(command.ExecuteScalar());
-                MW.MarkupID = MarkupID;
-
-                //загрузка изображений по умолчанию 
-                SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-                LoadImage(TheOriginalWindowImage, SQL);
-                SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
-                LoadImage(TheMarkupWindowImage, SQL);
+                MarkupID = (int)command.ExecuteScalar();
+                MW.MarkupImage = new PhotoViewerImage("markup", MarkupID);
             }
             catch (Exception ex)
             {
@@ -285,7 +307,7 @@ namespace PhotoViewerPRCVI
         }
         
         /// <summary>
-        /// Поиск всех названий снимков
+        /// Поиск всех названий снимков (оригинальный/размеченный)
         /// </summary>
         /// <param name="type">Тип снимка</param>
         /// <returns></returns>
@@ -297,7 +319,7 @@ namespace PhotoViewerPRCVI
             {
                 //открытие подключения
                 if (connection.State == ConnectionState.Closed) connection.Open();
-                
+
                 if (type == "markup")
                 {
                     //получение размера массива 
@@ -382,9 +404,9 @@ namespace PhotoViewerPRCVI
 
             return names;
         }
-        
+
         /// <summary>
-        /// Поиск размеченных изображений, свяанных с выбранным оригиналом
+        /// Поиск размеченных снимков, связанных с выбранным оригиналом
         /// </summary>
         /// <param name="OriginalID"></param>
         /// <returns></returns>
@@ -396,7 +418,7 @@ namespace PhotoViewerPRCVI
             {
                 //открытие подключения
                 if (connection.State == ConnectionState.Closed) connection.Open();
-                
+
                 //получение размера массива 
                 string SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
                 SqlCommand command = new SqlCommand(SQL, connection);
@@ -430,7 +452,7 @@ namespace PhotoViewerPRCVI
                     names[currentItem] = row.Field<int>("MarkupID").ToString() + ": " + name;
                     currentItem++;
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -443,117 +465,56 @@ namespace PhotoViewerPRCVI
 
             return names;
         }
-
-        /// <summary>
-        /// Добавление оригинального снимка в БД
-        /// </summary>
-        /// <param name="AddingPath">Путь к изображению</param>
-        /// <param name="AddingDate">Дата создания снимка</param>
-        /// <param name="AddingSputnik">Спутник, с которого сделан снимок</param>
-        /// <param name="AddingRegion">Регион, в котором сделан снимок</param>
-        public static void AddOriginalImageInDB(string AddingPath, DateTime AddingDate, string AddingSputnik, string AddingRegion)
-        {
-            try
-            {
-                //открытие подключения
-                if (connection.State == ConnectionState.Closed) connection.Open();
-
-                //поиск доступного ID для добавления картинки
-                string SQL = "SELECT MAX(OriginalID) FROM dbo.Originals";
-                SqlCommand command = new SqlCommand(SQL, connection);
-                int newID = (int)command.ExecuteScalar();
-                newID++;
-
-                //добавление записи о снимке в таблицу БД
-                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
-                SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
-                      AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
-                command = new SqlCommand(SQL, connection);
-                command.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open) connection.Close();
-            }
-        }
-
-        /// <summary>
-        /// Добавление размеченного снимка в БД
-        /// </summary>
-        /// <param name="AddingPath">Путь к изображению</param>
-        /// <param name="AddingDate">Дата разметки снимка</param>
-        /// <param name="AddingOriginalID">ID оригинального снимка</param>
-        public static void AddMarkupImageInDB(string AddingPath, DateTime AddingDate, int AddingOriginalID)
-        {
-            try
-            {
-                //открытие подключения
-                if (connection.State == ConnectionState.Closed) connection.Open();
-
-                //поиск доступного ID для добавления картинки
-                string SQL = "SELECT MAX(MarkupID) FROM dbo.Markups";
-                SqlCommand command = new SqlCommand(SQL, connection);
-                int newID = (int)command.ExecuteScalar();
-                newID++;
-
-                //добавление записи о снимке в таблицу БД
-                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
-                SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," +
-                    AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath + "');";
-                command = new SqlCommand(SQL, connection);
-                command.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open) connection.Close();
-            }
-        }
-
-        //изменение информации о снимке
-
-        /// <summary>
-        /// Удаление информации о снимке из БД
-        /// </summary>
-        /// <param name="type">Тип снимка</param>
-        /// <param name="ID">ID снимка</param>
-        public static void DeleteImageInDB(string type, int ID)
-        {
-            try
-            {
-                //открытие подключения
-                connection.Open();
-
-                string SQL;
-
-                //удаление записи из ДБ
-                if (type == "original") SQL = "DELETE FROM dbo.Originals WHERE (OriginalID = " + ID + ")";
-                else SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
-                SqlCommand command = new SqlCommand(SQL, connection);
-                command.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open) connection.Close();
-            }
-        }
-
-
-        /* 
-        что нужно:
         
-        -изменение инфо о картинке
-        */
+        /// <summary>
+        /// Вывод подробной информации из таблицы БД в таблицу в окне
+        /// </summary>
+        /// <param name="table">Элемент таблицы в окне</param>
+        /// <param name="SQL">Запрос для извлечения данных</param>
+        /// <param name="connection">Подключение к БД</param>
+        public static void LoadTableInInfo(DataGrid table, string SQL)
+        {
+            try
+            {
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //таблица для хранения информации, извлеченной из БД
+                DataTable keepTable = new DataTable();
+
+                //полная команда (SQL query + connection query) для извлечения информации
+                SqlCommand command = new SqlCommand(SQL, connection);
+
+                //адаптер для извлечения информации из БД в Таблицу
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+                // установка команды на добавление для вызова хранимой процедуры
+                adapter.InsertCommand = new SqlCommand("DateAndPicturepath", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 50, "Picturepath"));
+
+                //???
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 1, "OriginalID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //заполнение адаптером таблицы хранения информации из БД
+                adapter.Fill(keepTable);
+
+                //заполнение элемента таблицы информацией из таблицы хранения
+                table.ItemsSource = keepTable.DefaultView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+
+        
+        //временно использующиеся методы
+        
     }
 }

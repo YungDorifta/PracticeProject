@@ -22,7 +22,7 @@
             <Label Content="Размеченный снимок" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,40,0,0"/>
             
             <ComboBox x:Name="OriginalIDTB" HorizontalAlignment="Right" Height="25" Margin="0,5,5,0" VerticalAlignment="Top" Width="120" Loaded="OriginalIDTB_Loaded" SelectionChanged="OriginalIDTB_SelectionChanged"/>
-            <ComboBox x:Name="MarkupIDTB" HorizontalAlignment="Right" Height="25" Margin="0,40,5,0" VerticalAlignment="Top" Width="120" Loaded="MarkupIDTB_Loaded"/>
+            <ComboBox x:Name="MarkupIDTB" HorizontalAlignment="Right" Height="25" Margin="0,40,5,0" VerticalAlignment="Top" Width="120"/>
         </Grid>
 
         <Label Grid.Row="1" Content="Дополнительные фильтры для поиска:" HorizontalAlignment="Center" FontWeight="Bold"/>

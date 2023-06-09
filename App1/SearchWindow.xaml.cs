@@ -49,7 +49,6 @@ namespace PhotoViewerPRCVI
             //загрузка списка
             int selected = -1;
             int current = 0;
-
             string[] names = PhotoViewerImage.FindImageNamesAndIDs("original");
             foreach (string name in names)
             {
@@ -68,40 +67,7 @@ namespace PhotoViewerPRCVI
             }
             else if (OriginalIDTB.Items.Count > 0) OriginalIDTB.SelectedIndex = 0;
         }
-
-        /// <summary>
-        /// Загрузка названий разметок при загрузке
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MarkupIDTB_Loaded(object sender, RoutedEventArgs e)
-        {
-            //загрузка списка
-            int selected = -1;
-            int current = 0;
-
-            string[] names = PhotoViewerImage.FindImageNamesAndIDs(OriginalImage.GetID());
-            foreach (string name in names)
-            {
-                if (name != null)
-                {
-                    MarkupIDTB.Items.Add(name);
-                    if (name.Split(':')[0] == MarkupImage.GetID().ToString()) selected = current;
-                    current++;
-                }
-            }
-
-            //выбор фото с главного окна
-            if (selected != -1)
-            {
-                MarkupIDTB.SelectedIndex = selected;
-            }
-            else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
-
-            //загрузка доп. параметров
-
-        }
-
+        
         /// <summary>
         /// Перезагрузка разметок при выборе другого оригинала
         /// </summary>
@@ -113,21 +79,17 @@ namespace PhotoViewerPRCVI
             {
                 //очистить список
                 MarkupIDTB.Items.Clear();
-
-
+                
                 //извлечь новый ID, если возможно, иначе взять старый
-                int NewOriginalID;
+                int NewOriginalID = OriginalImage.GetID();
                 if (OriginalIDTB.Text != null)
                 {
                     if (OriginalIDTB.Text != "") NewOriginalID = Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]);
-                    else NewOriginalID = OriginalImage.GetID();
                 }
-                else NewOriginalID = OriginalImage.GetID();
 
                 //перезагрузить список разметок
                 int selected = -1;
                 int current = 0;
-
                 string[] names = PhotoViewerImage.FindImageNamesAndIDs(NewOriginalID);
                 foreach (string name in names)
                 {

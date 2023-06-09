@@ -46,8 +46,8 @@ namespace PhotoViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        //ID изображений
-        public string OriginalID, MarkupID;
+        //изображения (+ID)
+        public PhotoViewerImage OriginalImage, MarkupImage;
 
         //ссылки на функциональные окна
         public FullInfoWindow FIW;
@@ -60,8 +60,8 @@ namespace PhotoViewer
         public MainWindow()
         {
             InitializeComponent();
-            this.OriginalID = null;
-            this.MarkupID = null;
+            OriginalImage = null;
+            MarkupImage = null;
 
             FIW = null;
             CW = null;
@@ -76,8 +76,8 @@ namespace PhotoViewer
         public MainWindow(int OriginalID, int MarkupID)
         {
             InitializeComponent();
-            this.OriginalID = Convert.ToString(OriginalID);
-            this.MarkupID = Convert.ToString(MarkupID);
+            OriginalImage = new PhotoViewerImage("original", OriginalID);
+            MarkupImage = new PhotoViewerImage("markup", MarkupID);
 
             FIW = null;
             CW = null;
@@ -93,25 +93,15 @@ namespace PhotoViewer
         {
             try
             {
-                //загрузить картики по умлчанию
-                if (OriginalID == null || MarkupID == null)
+                //найти картики по умочанию, если ID не заданы
+                if (OriginalImage == null || MarkupImage == null)
                 {
-                    PhotoViewerImage.LoadDefaultImagesInMain(TheOriginalWindowImage, TheMarkupWindowImage, this);
-                }
-                //иначе - вывести картинки с индексами из полей
-                else
-                {
-                    //вывод картинок по путям из БД
-                    string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-                    PhotoViewerImage.LoadImage(TheOriginalWindowImage, SQL);
-                    SQL = "SELECT Picturepath FROM dbo.Markups WHERE (OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
-                    PhotoViewerImage.LoadImage(TheMarkupWindowImage, SQL);
+                    PhotoViewerImage.ResetToDefaultImagesInMain(this);
 
-                    //PhotoViewerImage Orig = new PhotoViewerImage(1, connection);
-                    //Orig.LoadImage(TheOriginalWindowImage);
-                    //PhotoViewerImage Mark = new PhotoViewerImage(1, 1, connection);
-                    //Mark.LoadImage(TheMarkupWindowImage);
                 }
+                //вывести картинки в окно
+                OriginalImage.LoadImage(TheOriginalWindowImage);
+                MarkupImage.LoadImage(TheMarkupWindowImage);
             }
             catch (Exception ex)
             {
@@ -141,7 +131,7 @@ namespace PhotoViewer
             //открыть окно полной информации, если его нет, если есть - переключиться на него
             if (this.FIW == null)
             {
-                FIW = new FullInfoWindow(Convert.ToInt32(this.OriginalID), Convert.ToInt32(this.MarkupID), this);
+                FIW = new FullInfoWindow(OriginalImage.GetID(), MarkupImage.GetID(), this);
                 FIW.Show();
             }
             else this.FIW.Focus();
@@ -172,7 +162,7 @@ namespace PhotoViewer
             }
 
             //открыть окно поиска снимков
-            SearchPhotos SPW = new SearchPhotos(OriginalID, MarkupID);
+            SearchPhotos SPW = new SearchPhotos(OriginalImage.GetID().ToString(), MarkupImage.GetID().ToString());
             SPW.Show();
             this.Close();
         }
@@ -229,7 +219,7 @@ namespace PhotoViewer
             //открыть окно изменения, если его еще нет
             if (this.CW == null)
             {
-                this.CW = new ChangeWindow(Convert.ToInt32(OriginalID), "original", this);
+                this.CW = new ChangeWindow(OriginalImage.GetID(), "original", this);
                 this.CW.Show();
             }
             else this.CW.Focus();
@@ -257,7 +247,7 @@ namespace PhotoViewer
             //открыть окно изменения, если его еще нет
             if (this.CW == null)
             {
-                this.CW = new ChangeWindow(Convert.ToInt32(MarkupID), "markup", this);
+                this.CW = new ChangeWindow(MarkupImage.GetID(), "markup", this);
                 this.CW.Show();
             }
             else this.CW.Focus();
@@ -285,7 +275,7 @@ namespace PhotoViewer
             //открыть окно удаления, если его нет
             if (this.DW == null)
             {
-                this.DW = new DeleteWindow(Convert.ToInt32(OriginalID), "original", this);
+                this.DW = new DeleteWindow(OriginalImage.GetID(), "original", this);
                 this.DW.Show();
             }
             else this.DW.Focus();
@@ -313,7 +303,7 @@ namespace PhotoViewer
             //открыть окно удаления, если его нет
             if (this.DW == null)
             {
-                this.DW = new DeleteWindow(Convert.ToInt32(MarkupID), "markup", this);
+                this.DW = new DeleteWindow(MarkupImage.GetID(), "markup", this);
                 this.DW.Show();
             }
             else this.DW.Focus();
@@ -324,7 +314,9 @@ namespace PhotoViewer
         /// </summary>
         public void ReloadToDefaultImages()
         {
-            PhotoViewerImage.LoadDefaultImagesInMain(TheOriginalWindowImage, TheMarkupWindowImage, this);
+            PhotoViewerImage.ResetToDefaultImagesInMain(this);
+            OriginalImage.LoadImage(TheOriginalWindowImage);
+            MarkupImage.LoadImage(TheMarkupWindowImage);
         }
     }
 }
