@@ -11,96 +11,126 @@ namespace PhotoViewerPRCVI
 {
     public partial class PhotoViewerImage
     {
-        /*не используется
+        //подключение к БД (для всех изображений)
+        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        static SqlConnection connection = new SqlConnection(connectionString);
 
         //данные конкретного изображения
-        Uri Path;
         string Type;
+        int ID;
         int OriginalID;
-        int MarkupID;
-        //DateTime date;
+        DateTime Date;
+        string Sputnik;
+        string Region;
+        Uri Path;
 
         /// <summary>
-        /// Конструктор объекта оригинального сниимка, содержащего данные
+        /// Конструктор объекта снимка
         /// </summary>
-        /// <param name="OriginalID">ID оригинального снимка</param>
+        /// <param name="ID">ID оригинального снимка</param>
         /// <param name="connection">Подключение к серверу</param>
-        public PhotoViewerImage(int OriginalID, SqlConnection connection)
+        public PhotoViewerImage(string Type, int ID)
         {
-            this.Type = "original";
+            //заполнение полей типа снимка и ID в таблице соответствующего типа
+            this.Type = Type;
+            this.ID = ID;
 
-            //сохранение пути к изображению полученного из БД
-            string SQL = "SELECT Picturepath FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-            SqlCommand command = new SqlCommand(SQL, connection);
-            string imageUri = (string)command.ExecuteScalar();
-            this.Path = new Uri(imageUri);
+            //заполнение полей даты, пути к файлу, региона, спутника
+            string SQL;
+            SqlCommand command;
+            if (Type == "original")
+            {
+                //формирование команды для извлечения информации об изображении
+                SQL = "SELECT * FROM dbo.Originals WHERE (OriginalID=" + ID + ")";
+                command = new SqlCommand(SQL, connection);
 
-            //сохранение OriginalID в поле объекта
-            this.OriginalID = OriginalID;
+                //адаптер для извлечения информации из БД в Таблицу
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
 
-            //сохранение даты изображения полученной из БД
-            /*
-            SQL = "SELECT Date FROM dbo.Originals WHERE OriginalID=" + OriginalID;
-            command = new SqlCommand(SQL, connection);
-            this.date = (DateTime)command.ExecuteScalar();
-            
-    }
+                // установка команды на добавление для вызова хранимой процедуры
+                adapter.InsertCommand = new SqlCommand("AllOriginalImage", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Region", SqlDbType.NChar, 50, "Region"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Sputnik", SqlDbType.NChar, 50, "Sputnik"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 100, "Picturepath"));
 
+                //???
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 1, "OriginalID");
+                parameter.Direction = ParameterDirection.Output;
 
-    /// <summary>
-    /// Конструктор объекта размеченного снимка, содержащего параметры
-    /// </summary>
-    /// <param name="OriginalID"></param>
-    /// <param name="MarkupID"></param>
-    /// <param name="connection"></param>
-    public PhotoViewerImage(int OriginalID, int MarkupID, SqlConnection connection)
-        {
-            this.Type = "markup";
+                //заполнение адаптером таблицы хранения информации из БД
+                DataTable keepTable = new DataTable();
+                adapter.Fill(keepTable);
 
-            //сохранение пути к изображению полученного из БД
-            string SQL = "SELECT Picturepath FROM dbo.Markups WHERE OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")";
-            SqlCommand command = new SqlCommand(SQL, connection);
-            string imageUri = (string)command.ExecuteScalar();
-            this.Path = new Uri(imageUri);
+                //заполнение полей информацией из таблицы
+                foreach(DataRow row in keepTable.Rows)
+                {
+                    Date = row.Field<DateTime>("Date");
+                    Sputnik = row.Field<string>("Sputnik");
+                    Region = row.Field<string>("Region");
+                    Path = new Uri(row.Field<string>("Picturepath"));
+                }
+            }
+            else
+            {
+                //формирование команды для извлечения информации об изображении
+                SQL = "SELECT * FROM dbo.Markups WHERE (MarkupID=" + ID + ")";
+                command = new SqlCommand(SQL, connection);
 
-            //сохранение OriginalID в поле объекта
-            this.OriginalID = OriginalID;
-            this.MarkupID = MarkupID;
+                //адаптер для извлечения информации из БД в Таблицу
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
 
-            //сохранение даты изображения полученной из БД
-            /*
-            SQL = "SELECT Date FROM dbo.Markups WHERE OriginalID=" + OriginalID + ") AND (MarkupID=" + MarkupID + ")"; ;
-            command = new SqlCommand(SQL, connection);
-            this.date = (DateTime)command.ExecuteScalar();
-            
-        }
-        
-        /// <summary>
-        /// Проверка снимка: оригинал или разметка
-        /// </summary>
-        /// <returns></returns>
-        public bool IsOriginal()
-        {
-            if (this.Type == "original") return true;
-            else return false;
+                // установка команды на добавление для вызова хранимой процедуры
+                adapter.InsertCommand = new SqlCommand("AllOriginalImage", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@OriginalID", SqlDbType.Int, 50, "OriginalID"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 100, "Picturepath"));
+
+                //???
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 1, "MarkupID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //заполнение адаптером таблицы хранения информации из БД
+                DataTable keepTable = new DataTable();
+                adapter.Fill(keepTable);
+
+                //заполнение полей информацией из таблицы
+                foreach (DataRow row in keepTable.Rows)
+                {
+                    OriginalID = row.Field<int>("OriginalID");
+                    Date = row.Field<DateTime>("Date");
+                    Path = new Uri(row.Field<string>("Picturepath"));
+                }
+            }
         }
         
         /// <summary>
         /// Получение ID оригинального фото
         /// </summary>
         /// <returns></returns>
-        public int GetOriginalID()
+        public int GetID()
         {
-            return this.OriginalID;
+            return ID;
         }
 
         /// <summary>
         /// Получение ID размеченного фото
         /// </summary>
         /// <returns></returns>
-        public int GetMarkupID()
+        public int GetOriginalIDforMarkup()
         {
-            return this.MarkupID;
+            return OriginalID;
+        }
+
+        /// <summary>
+        /// Получение даты создания/разметки снимка
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GetDate()
+        {
+            return Date;
         }
 
         /// <summary>
@@ -114,7 +144,7 @@ namespace PhotoViewerPRCVI
                 //вывод изображения по пути BMP
                 BitmapImage myBitmapImage = new BitmapImage();
                 myBitmapImage.BeginInit();
-                myBitmapImage.UriSource = this.Path;
+                myBitmapImage.UriSource = Path;
                 myBitmapImage.EndInit();
 
                 //вывод изображения из BMP в окно
@@ -125,14 +155,11 @@ namespace PhotoViewerPRCVI
                 MessageBox.Show(ex.Message);
             }
         }
-        */
+        
+        
 
-        //использующееся на данный момент:
-
-        //подключение к БД
-        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-        static SqlConnection connection = new SqlConnection(connectionString);
-
+        
+        
         /// <summary>
         /// Вывод изображения по пути извлеченному из БД в окно с помощью запроса SQL
         /// </summary>
@@ -492,8 +519,6 @@ namespace PhotoViewerPRCVI
 
         //изменение информации о снимке
 
-
-
         /// <summary>
         /// Удаление информации о снимке из БД
         /// </summary>
@@ -529,7 +554,6 @@ namespace PhotoViewerPRCVI
         что нужно:
         
         -изменение инфо о картинке
-        -поиск всех ID оригиналов/разметок, связанных с оригиналом
         */
     }
 }

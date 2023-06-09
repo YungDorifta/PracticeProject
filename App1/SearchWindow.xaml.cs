@@ -22,7 +22,7 @@ namespace PhotoViewerPRCVI
     public partial class SearchPhotos : Window
     {
         //ID снимков с главного окна
-        string OriginalID, MarkupID;
+        PhotoViewerImage OriginalImage, MarkupImage;
 
         /// <summary>
         /// Конструктор окна поиска снимков
@@ -32,10 +32,13 @@ namespace PhotoViewerPRCVI
         public SearchPhotos(string OriginalID, string MarkupID)
         {
             InitializeComponent();
-            this.OriginalID = OriginalID;
-            this.MarkupID = MarkupID;
+            OriginalImage = new PhotoViewerImage("original", Convert.ToInt32(OriginalID));
+            MarkupImage = new PhotoViewerImage("markup", Convert.ToInt32(MarkupID));
         }
         
+
+
+
         /// <summary>
         /// Загрузка названий оригиналов при загрузке
         /// </summary>
@@ -43,6 +46,7 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OriginalIDTB_Loaded(object sender, RoutedEventArgs e)
         {
+            //загрузка списка
             int selected = -1;
             int current = 0;
 
@@ -52,10 +56,12 @@ namespace PhotoViewerPRCVI
                 if (name != null)
                 {
                     OriginalIDTB.Items.Add(name);
-                    if (name.Split(':')[0] == OriginalID) selected = current;
+                    if (name.Split(':')[0] == OriginalImage.GetID().ToString()) selected = current;
                     current++;
                 }
             }
+
+            //выбор фото с главного окна
             if (selected != -1)
             {
                 OriginalIDTB.SelectedIndex = selected;
@@ -70,25 +76,30 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void MarkupIDTB_Loaded(object sender, RoutedEventArgs e)
         {
+            //загрузка списка
             int selected = -1;
             int current = 0;
 
-            string[] names = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalID));
-            
+            string[] names = PhotoViewerImage.FindImageNamesAndIDs(OriginalImage.GetID());
             foreach (string name in names)
             {
                 if (name != null)
                 {
                     MarkupIDTB.Items.Add(name);
-                    if (name.Split(':')[0] == MarkupID) selected = current;
+                    if (name.Split(':')[0] == MarkupImage.GetID().ToString()) selected = current;
                     current++;
                 }
             }
+
+            //выбор фото с главного окна
             if (selected != -1)
             {
                 MarkupIDTB.SelectedIndex = selected;
             }
             else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
+
+            //загрузка доп. параметров
+
         }
 
         /// <summary>
@@ -98,31 +109,32 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OriginalIDTB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //очистить список
-            MarkupIDTB.Items.Clear();
-            
             if (OriginalIDTB.IsLoaded)
             {
+                //очистить список
+                MarkupIDTB.Items.Clear();
+
+
                 //извлечь новый ID, если возможно, иначе взять старый
-                string NewOriginalID;
+                int NewOriginalID;
                 if (OriginalIDTB.Text != null)
                 {
-                    if (OriginalIDTB.Text != "") NewOriginalID = OriginalIDTB.SelectedItem.ToString().Split(':')[0];
-                    else NewOriginalID = OriginalID;
+                    if (OriginalIDTB.Text != "") NewOriginalID = Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]);
+                    else NewOriginalID = OriginalImage.GetID();
                 }
-                else NewOriginalID = OriginalID;
+                else NewOriginalID = OriginalImage.GetID();
 
                 //перезагрузить список разметок
                 int selected = -1;
                 int current = 0;
 
-                string[] names = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(NewOriginalID));
+                string[] names = PhotoViewerImage.FindImageNamesAndIDs(NewOriginalID);
                 foreach (string name in names)
                 {
                     if (name != null)
                     {
                         MarkupIDTB.Items.Add(name);
-                        if (name.Split(':')[0] == MarkupID) selected = current;
+                        if (name.Split(':')[0] == MarkupImage.GetID().ToString()) selected = current;
                         current++;
                     }
                 }
@@ -134,9 +146,13 @@ namespace PhotoViewerPRCVI
                 }
                 else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
             }
+
+            //загрузка доп. параметров
         }
 
-        //(конец того, что нужно доделать)
+
+
+
 
         /// <summary>
         /// Загрузка главного окна с найденными снимками
@@ -145,22 +161,23 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void LoadAndBackToMain(object sender, RoutedEventArgs e)
         {
-            MainWindow MW;
+            //получение ID новых изображений
+            string NewOriginalID = OriginalIDTB.Text.Split(':')[0];
+            string NewMarkupID = MarkupIDTB.Text.Split(':')[0];
 
-            OriginalID = OriginalIDTB.Text.Split(':')[0];
-            MarkupID = MarkupIDTB.Text.Split(':')[0];
-            
+            //создание и переход к главному окну с новыми изображениями
+            MainWindow MW;
             try
             {
-                if(OriginalID == null || MarkupID == null)
+                //при отсутствии новых ID - создать главное окно по умолчанию
+                if(NewOriginalID == null || NewMarkupID == null)
                 {
                     MW = new MainWindow();
                 }
                 else
                 {
-                    MW = new MainWindow(Convert.ToInt32(OriginalID), Convert.ToInt32(MarkupID));
+                    MW = new MainWindow(Convert.ToInt32(NewOriginalID), Convert.ToInt32(NewMarkupID));
                 }
-
                 MW.Show();
                 this.Close();
             }
@@ -178,16 +195,13 @@ namespace PhotoViewerPRCVI
         private void BackToMain(object sender, RoutedEventArgs e)
         {
             MainWindow MW;
-
             try
             {
-                MW = new MainWindow(Convert.ToInt32(OriginalID), Convert.ToInt32(MarkupID));
-
+                MW = new MainWindow(OriginalImage.GetID(), MarkupImage.GetID());
                 if (MW == null)
                 {
                     MW = new MainWindow();
                 }
-
                 MW.Show();
                 this.Close();
             }
