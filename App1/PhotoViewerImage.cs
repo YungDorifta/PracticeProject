@@ -257,7 +257,11 @@ namespace PhotoViewerPRCVI
             }
         }
         
-        //поиск всех названий картинок
+        /// <summary>
+        /// Поиск всех названий снимков
+        /// </summary>
+        /// <param name="type">Тип снимка</param>
+        /// <returns></returns>
         public static string[] FindImageNamesAndIDs(string type)
         {
             string[] names = new string[0];
@@ -339,6 +343,67 @@ namespace PhotoViewerPRCVI
                         currentItem++;
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+        
+        /// <summary>
+        /// Поиск размеченных изображений, свяанных с выбранным оригиналом
+        /// </summary>
+        /// <param name="OriginalID"></param>
+        /// <returns></returns>
+        public static string[] FindImageNamesAndIDs(int OriginalID)
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+                
+                //получение размера массива 
+                string SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение ID и названия оригиналов из БД 
+                SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups WHERE (OriginalID = " + OriginalID.ToString() + ")";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("IDandPath", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable IDPathTable = new DataTable();
+                adapter.Fill(IDPathTable);
+
+                int currentItem = 0;
+
+                //вывод ID оригиналов в item
+                foreach (DataRow row in IDPathTable.Rows)
+                {
+                    string path = row.Field<string>("Picturepath");
+                    string[] pathsplit = path.Split('\\');
+                    string name = pathsplit[pathsplit.Length - 1];
+
+                    names[currentItem] = row.Field<int>("MarkupID").ToString() + ": " + name;
+                    currentItem++;
+                }
+                
             }
             catch (Exception ex)
             {
