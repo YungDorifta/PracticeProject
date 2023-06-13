@@ -6,14 +6,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewer"
         mc:Ignorable="d"
-        Title="Подробная информация" Height="450" Width="800">
+        Title="Подробная информация" 
+        Height="250" Width="800"
+        MinHeight="250" MinWidth="400">
     <Grid x:Name="FullInfoWindowMainGrid">
         <Grid x:Name="FullInfoSubGrid">
-            <DataGrid  x:Name="FullInfoTable" Grid.Column="1" AutoGenerateColumns="False" Margin="10,10,10,60">
+            <DataGrid  x:Name="FullInfoTable" Grid.Column="1" AutoGenerateColumns="False" Margin="10,10,10,60" IsReadOnly="True" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding OriginalID}" Header="ID оригинального фото" Width="120"/>
-                    <DataGridTextColumn Binding="{Binding Date}" Header="Дата снимка" Width="125"/>
-                    <DataGridTextColumn Binding="{Binding Picturepath}" Header="Путь к картинке" Width="300"/>
+                    <DataGridTextColumn Binding="{Binding Parameter}" Header="Параметр" Width="275"/>
+                    <DataGridTextColumn Binding="{Binding Value}" Header="Значение" Width="1*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

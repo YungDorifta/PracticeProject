@@ -41,8 +41,7 @@ namespace PhotoViewer
             try
             {
                 //заполнение таблицы информацией
-                string SQL = "SELECT * FROM dbo.Originals";
-                PhotoViewerImage.LoadTableInInfo(FullInfoTable, SQL);
+                PhotoViewerImage.LoadTableInInfo(FullInfoTable, OriginalID, MarkupID);
             }
             catch (Exception ex)
             {

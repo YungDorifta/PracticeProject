@@ -149,6 +149,24 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
+        /// Получить регион съемки
+        /// </summary>
+        /// <returns></returns>
+        public string GetRegion()
+        {
+            return Region;
+        }
+
+        /// <summary>
+        /// Получить спутник съемки
+        /// </summary>
+        /// <returns></returns>
+        public string GetSputnik()
+        {
+            return Sputnik;
+        }
+
+        /// <summary>
         /// Загрузка объекта-изображения в окно
         /// </summary>
         /// <param name="image">Элемент-изображение в окне</param>
@@ -529,16 +547,34 @@ namespace PhotoViewerPRCVI
         /// <param name="table">Элемент таблицы в окне</param>
         /// <param name="SQL">Запрос для извлечения данных</param>
         /// <param name="connection">Подключение к БД</param>
-        public static void LoadTableInInfo(DataGrid table, string SQL)
+        public static void LoadTableInInfo(DataGrid table, int OriginalID, int MarkupID)
         {
             try
             {
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
+                PhotoViewerImage OriginalImage = new PhotoViewerImage("original", OriginalID);
+                PhotoViewerImage MarkupImage = new PhotoViewerImage("markup", MarkupID);
+
                 //таблица для хранения информации, извлеченной из БД
                 DataTable keepTable = new DataTable();
 
+                keepTable.Columns.Add("Parameter");
+                keepTable.Columns.Add("Value");
+
+                keepTable.Rows.Add("Название оригинала", OriginalImage.GetName().ToString());
+                keepTable.Rows.Add("Название разметки", MarkupImage.GetName().ToString());
+                keepTable.Rows.Add("Дата создания оригинала", OriginalImage.GetDate().ToString());
+                keepTable.Rows.Add("Дата создания разметки", MarkupImage.GetDate().ToString());
+                keepTable.Rows.Add("Регион съемки оригинала", OriginalImage.GetRegion().ToString());
+                keepTable.Rows.Add("Спутник, с которого сфотографирован оригинал", OriginalImage.GetSputnik().ToString());
+
+                //заполнение элемента таблицы информацией из таблицы хранения
+                table.ItemsSource = keepTable.DefaultView;
+
+                /*
                 //полная команда (SQL query + connection query) для извлечения информации
+                string SQL = "SELECT dbo.Originals.Date, dbo.Markups.Date, Region, Sputnik, Region FROM dbo.Originals, dbo.Markups";
                 SqlCommand command = new SqlCommand(SQL, connection);
 
                 //адаптер для извлечения информации из БД в Таблицу
@@ -556,9 +592,7 @@ namespace PhotoViewerPRCVI
 
                 //заполнение адаптером таблицы хранения информации из БД
                 adapter.Fill(keepTable);
-
-                //заполнение элемента таблицы информацией из таблицы хранения
-                table.ItemsSource = keepTable.DefaultView;
+                */
             }
             catch (Exception ex)
             {
