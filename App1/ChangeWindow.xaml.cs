@@ -72,6 +72,39 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
+        /// Загрузка информации при загрузке окна
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ChangeWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            DateBox.DisplayDate = UpdatingImage.GetDate();
+            DateBox.Text = DateBox.DisplayDate.ToString();
+            if (type == "original")
+            {
+                SputnikBox.Text = UpdatingImage.GetSputnik().Split()[0];
+                RegionBox.Text = UpdatingImage.GetRegion().Split()[0];
+            }
+            else
+            {
+                int selected = -1;
+                int current = 0;
+                string[] origNames = PhotoViewerImage.FindImageNamesAndIDs("original");
+                foreach (string name in origNames)
+                {
+                    OriginalsBox.Items.Add(name);
+                    if (name != null)
+                    {
+                        if (name.Split(':')[0] == UpdatingImage.GetOriginalIDforMarkup().ToString()) selected = current; 
+                    }
+                    current++;
+                }
+                if (selected != -1) OriginalsBox.SelectedIndex = selected;
+                else if (OriginalsBox.Items.Count > 0) OriginalsBox.SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
         /// Сохранить изменения и вернуться в главное окно
         /// </summary>
         /// <param name="sender"></param>
@@ -118,6 +151,12 @@ namespace PhotoViewerPRCVI
 
             //сброс информации об открытом окне изменения
             this.MW.CW = null;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            this.MW.CW = null;
+            base.OnClosed(e);
         }
     }
 }

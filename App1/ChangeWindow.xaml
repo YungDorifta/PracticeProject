@@ -8,7 +8,8 @@
         Title="Изменить информацию о снимке" 
         Height="150" Width="411"
         MinHeight="150" MinWidth="411"
-        MaxHeight="150" MaxWidth="411">
+        MaxHeight="150" MaxWidth="411"
+        Loaded="ChangeWindow_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -20,7 +21,7 @@
 
         <Grid x:Name="UpdatingInfoGrid" Grid.Row="1">
             <Label x:Name="DateLabel" Content="Дата:" Margin="10,0,10,0"/>
-            <DatePicker Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,10,0"/>
+            <DatePicker x:Name="DateBox" Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,10,0"/>
 
             <Label x:Name="OrigSputLabel" Content="Оригинал:" Margin="140,0,10,0"/>
             <ComboBox x:Name="OriginalsBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>

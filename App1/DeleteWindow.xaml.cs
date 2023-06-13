@@ -1,4 +1,5 @@
 ﻿using PhotoViewer;
+using System;
 using System.Windows;
 
 namespace PhotoViewerPRCVI
@@ -88,6 +89,12 @@ namespace PhotoViewerPRCVI
 
             //сброс информации об открытом окне удаления
             this.MW.DW = null;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            this.MW.DW = null;
+            base.OnClosed(e);
         }
     }
 }

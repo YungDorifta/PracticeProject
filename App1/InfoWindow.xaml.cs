@@ -68,5 +68,11 @@ namespace PhotoViewer
             //сброс информации об открытом окне информации
             this.MW.FIW = null;
         }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            this.MW.FIW = null;
+            base.OnClosed(e);
+        }
     }
 }
