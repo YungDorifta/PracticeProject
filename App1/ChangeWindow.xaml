@@ -5,15 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
-        Title="Изменить информацию об оригинальном снимке" Height="500" Width="700">
+        Title="Изменить информацию о снимке" 
+        Height="150" Width="411"
+        MinHeight="150" MinWidth="411"
+        MaxHeight="150" MaxWidth="411">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/> 
+        </Grid.RowDefinitions>
+        
+        <Label Content="Изменяемый снимок: " Grid.Row="0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
 
-        <Button Content="Отмена" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Click="BackToMain"/>
-        <Button Content="Сохранить изменения" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom" Grid.Column="1" Click="SaveAndBackToMain"/>
+        <Grid x:Name="UpdatingInfoGrid" Grid.Row="1">
+            <Label x:Name="DateLabel" Content="Дата:" Margin="10,0,10,0"/>
+            <DatePicker Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,10,0"/>
+
+            <Label x:Name="OrigSputLabel" Content="Оригинал:" Margin="140,0,10,0"/>
+            <ComboBox x:Name="OriginalsBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
+            <TextBox x:Name="SputnikBox" Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="140,0,10,0"/>
+
+            <Label x:Name="RegionLabel" Content="Регион:" Margin="270,0,10,0"/>
+            <TextBox x:Name="RegionBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
+        </Grid>
+
+        <Button Content="Отмена" Grid.Row="2" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Click="BackToMain"/>
+        <Button Content="Сохранить изменения" Grid.Row="2" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom" Click="SaveAndBackToMain"/>
         
     </Grid>
 </Window>

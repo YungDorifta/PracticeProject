@@ -26,17 +26,9 @@ namespace PhotoViewerPRCVI
         //ссылка на главное окно
         MainWindow MW;
 
-        /// <summary>
-        /// Конструктор окна для изменения информации о снимке
-        /// </summary>
-        public ChangeWindow(MainWindow MW)
-        {
-            InitializeComponent();
-            type = "original";
-            this.Title = "Изменить информацию об оригинальном снимке";
-            this.MW = MW;
-        }
-
+        //изменяемое изображение
+        PhotoViewerImage UpdatingImage;
+        
         /// <summary>
         /// Конструктор окна для изменения информации о снимке
         /// </summary>
@@ -49,11 +41,33 @@ namespace PhotoViewerPRCVI
             {
                 this.type = type;
                 this.Title = "Изменить информацию о размеченном снимке";
+                UpdatingImage = new PhotoViewerImage("markup", ID);
+
+                OriginalsBox.Visibility = Visibility.Visible;
+                RegionBox.Visibility = Visibility.Hidden;
+                RegionLabel.Visibility = Visibility.Hidden;
+                SputnikBox.Visibility = Visibility.Hidden;
+                OrigSputLabel.Content = "Оригинал:";
+
+                this.MinWidth = 285;
+                this.MaxWidth = 285;
+                this.Width = 285;
             }
             else
             {
                 this.type = "original";
                 this.Title = "Изменить информацию об оригинальном снимке";
+                UpdatingImage = new PhotoViewerImage("original", ID);
+
+                OriginalsBox.Visibility = Visibility.Hidden;
+                RegionBox.Visibility = Visibility.Visible;
+                RegionLabel.Visibility = Visibility.Visible;
+                SputnikBox.Visibility = Visibility.Visible;
+                OrigSputLabel.Content = "Спутник:";
+
+                this.MinWidth = 415;
+                this.MaxWidth = 415;
+                this.Width = 415;
             }
         }
 
@@ -64,6 +78,16 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void SaveAndBackToMain(object sender, RoutedEventArgs e)
         {
+            //сохранение изменений
+            if (type == "original")
+            {
+                //PhotoViewerImage.UpdateOrigImageDB(UpdatingImage.GetID(), );
+            }
+            else
+            {
+
+            }
+
             //проверка загрузки главного окна, восстановление если окно закрыто
             if (this.MW.IsLoaded) MW.Focus();
             else
@@ -71,10 +95,9 @@ namespace PhotoViewerPRCVI
                 this.MW = new MainWindow();
                 this.MW.Show();
             }
-            this.Close();
-
             //сброс информации об открытом окне изменения
             this.MW.CW = null;
+            this.Close();
         }
 
         /// <summary>

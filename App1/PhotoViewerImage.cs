@@ -266,7 +266,7 @@ namespace PhotoViewerPRCVI
         }
 
         //!!!сделать: изменение информации о снимке
-        public static void AlterOrigImageDB(int ID, DateTime date, string Region, string Sputnik)
+        public static void UpdateOrigImageDB(int ID, DateTime date, string Region, string Sputnik)
         {
             try
             {
@@ -288,7 +288,7 @@ namespace PhotoViewerPRCVI
             }
         }
 
-        public static void AlterMarkupImageDB(int ID, DateTime date, int origID)
+        public static void UpdateMarkupImageDB(int ID, DateTime date, int origID)
         {
             try
             {
