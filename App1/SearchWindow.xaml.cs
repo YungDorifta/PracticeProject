@@ -37,7 +37,7 @@ namespace PhotoViewerPRCVI
         }
         
 
-
+        //!!!доделать: подгрузка фильтров и т д
 
         /// <summary>
         /// Загрузка названий оригиналов при загрузке
@@ -109,12 +109,11 @@ namespace PhotoViewerPRCVI
                 else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
             }
 
-            //загрузка доп. параметров
+            //доделать: загрузка доп. параметров
         }
 
 
-
-
+        
 
         /// <summary>
         /// Загрузка главного окна с найденными снимками

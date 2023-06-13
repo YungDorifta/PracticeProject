@@ -5,18 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewer"
         mc:Ignorable="d"
-        Title="Просмотр снимков" Height="450" Width="800"
+        Title="Просмотр снимков" 
+        Height="375" Width="640"
+        MinHeight="375" MinWidth="640" 
         Loaded="Window_Loaded">
 
     <Grid x:Name="MainGrid">
-        <Menu Height="20" VerticalAlignment="Top">
-            <MenuItem Header="Найти Снимок" Click="SearchPhotosClick">
+        <Menu Height="20" VerticalAlignment="Top" >
+            <MenuItem x:Name="ButtonMoreInfo" Header="Подробная информация о снимках" Click="InfoWindowOpen"/>
+            <MenuItem Header="Найти снимок" Click="SearchPhotosClick">
             </MenuItem>
-            <MenuItem Header="Добавить" Click="AddWindowOpen">
+            <MenuItem Header="Добавить снимок" Click="AddWindowOpen">
             </MenuItem>
             <MenuItem Header="Изменить информацию">
-                <MenuItem Header="Об оригинальном фото" Click="ChangeOrigWindowOpen"></MenuItem>
-                <MenuItem Header="О размеченном фото" Click="ChangeMarkupWindowOpen"></MenuItem>
+                <MenuItem Header="О текущем оригинальном фото" Click="ChangeOrigWindowOpen"></MenuItem>
+                <MenuItem Header="О текущем размеченном фото" Click="ChangeMarkupWindowOpen"></MenuItem>
             </MenuItem>
             <MenuItem Header="Удалить">
                 <MenuItem Header="Оригинальное фото" Click="DeleteOrigWidowOpen"></MenuItem>
@@ -26,35 +29,28 @@
         
         <Grid x:Name="InfoGrid" Margin="5,25,5,5">
             <Grid.RowDefinitions>
+                <RowDefinition  Height="25"/>
                 <RowDefinition/>
-                <RowDefinition Height="45"/>
             </Grid.RowDefinitions>
-            
-            <Grid Grid.Row="0" Margin="5">
+
+            <Grid Grid.Row="0" Margin="5,0,5,-5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Image x:Name="TheOriginalWindowImage" Grid.Column="0" Margin="5" Source="C:\Users\user\Desktop\PRCVIprojMy\images\1.jpg" Stretch="Fill"/>
-                <Image x:Name="TheMarkupWindowImage" Grid.Column="1" Margin="5" Source="C:\Users\user\Desktop\PRCVIprojMy\images\2.jpg" Stretch="Fill"/>
-            </Grid>
-            
-            <Grid x:Name="BottomInfoSubGrid" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <Label x:Name="DateOfPhoto"     Grid.Column="0"     Content="Дата Фото"      HorizontalAlignment="Left"      FontSize="20"   VerticalContentAlignment="Center"   Margin="5,0,0,0"/>
-                <Label x:Name="Region"          Grid.Column="1"     Content="Регион"        HorizontalAlignment="Center"    FontSize="20"   VerticalContentAlignment="Center"/>
-                <Label x:Name="DateOfMarkup"    Grid.Column="2"     Content="Дата Разметки"  HorizontalAlignment="Center"    FontSize="20"   VerticalContentAlignment="Center"/>
-                <Button x:Name="ButtonMoreInfo" Grid.Column="3"     Content="Подробнее"     HorizontalAlignment="Right"     FontSize="15"   VerticalContentAlignment="Center"   Margin="5" Padding="5" BorderBrush="Black" Click="InfoWindowOpen" />
+                <Label x:Name="OriginalLabel" Grid.Column="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Content="Оригинал:" FontWeight="Bold" FontSize="15"></Label>
+                <Label x:Name="MarkupLabel" Grid.Column="1" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Content="Разметка:" FontWeight="Bold" FontSize="15"></Label>
             </Grid>
             
-            <!--<Canvas HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>
-                <Image  HorizontalAlignment="Left" VerticalAlignment="Top" Height="100"  Width="100" Margin="350,175,0,0"/>-->
+            <Grid Grid.Row="1" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="TheOriginalWindowImage" Grid.Column="0" Margin="0,5,5,0" Source="C:\Users\user\Desktop\PRCVIprojMy\images\2.jpg" Stretch="Fill"/>
+                <Image x:Name="TheMarkupWindowImage" Grid.Column="1" Margin="5,5,0,0" Source="C:\Users\user\Desktop\PRCVIprojMy\images\1.jpg" Stretch="Fill"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

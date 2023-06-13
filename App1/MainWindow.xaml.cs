@@ -19,10 +19,12 @@ using System.Windows.Shapes;
 /*
 Доделать:
 
+    
+
 Главная:     вывод доп информации под фото
                 надписи где какое фото
                 
-Доп. информация: вывод доп информации в таблицу доделать, удалить картинки
+Доп. информация: вывод доп информации в таблицу доделать
 
 Поиск:      Доп.фильтры      
 
@@ -102,6 +104,12 @@ namespace PhotoViewer
                 //вывести картинки в окно
                 OriginalImage.LoadImage(TheOriginalWindowImage);
                 MarkupImage.LoadImage(TheMarkupWindowImage);
+                
+                //вывести информацию о картинках
+                OriginalLabel.Content = "Оригинал: " + OriginalImage.GetName();
+                MarkupLabel.Content = "Разметка: " + MarkupImage.GetName();
+                OriginalLabel.ToolTip = OriginalImage.GetName();
+                MarkupLabel.ToolTip = MarkupImage.GetName();
             }
             catch (Exception ex)
             {

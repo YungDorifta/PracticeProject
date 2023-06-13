@@ -136,6 +136,19 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
+        /// Получение имени изображения
+        /// </summary>
+        /// <returns></returns>
+        public string GetName()
+        {
+            string name;
+            int size;
+            size = this.Path.ToString().Split('/').Length;
+            name = this.Path.ToString().Split('/')[size - 1];
+            return name;
+        }
+
+        /// <summary>
         /// Загрузка объекта-изображения в окно
         /// </summary>
         /// <param name="image">Элемент-изображение в окне</param>
@@ -158,7 +171,7 @@ namespace PhotoViewerPRCVI
             }
         }
 
-
+        
         //статические методы для действий с БД
 
         /// <summary>
@@ -234,7 +247,51 @@ namespace PhotoViewerPRCVI
             }
         }
 
-        //!!! изменение информации о снимке
+        //!!!сделать: изменение информации о снимке
+        public static void AlterOrigImageDB(int ID, DateTime date, string Region, string Sputnik)
+        {
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //изменение записи в таблице
+                string SQL = "UPDATE dbo.Originals SET Date = '" + date + "', Region = '" + Region + "', Sputnik = '" + Sputnik + "' WHERE (OriginalID = " + ID + ")";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+
+        public static void AlterMarkupImageDB(int ID, DateTime date, int origID)
+        {
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //изменение записи в таблице
+                string SQL = "UPDATE dbo.Markups SET Date = '" + date + "', OriginalID = '" + origID + "' WHERE (MarkupID = " + ID + ")";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                command.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+        }
+        //
 
         /// <summary>
         /// Удаление информации о снимке из БД
@@ -512,9 +569,5 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Open) connection.Close();
             }
         }
-
-        
-        //временно использующиеся методы
-        
     }
 }

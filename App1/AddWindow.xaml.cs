@@ -130,7 +130,7 @@ namespace PhotoViewerPRCVI
             // Расширение файла по умолчанию
             dialog.DefaultExt = ".jpg";
             // Фильтр файлоа по расширению
-            dialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG)|*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG|All files (*.*)|*.*"; 
+            dialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG)|*.BMP;*.JPG;*.GIF;*.PNG;*.JPEG"; 
 
             // Открыть диалоговое окно и по окончанию работы проверить результат
             bool? result = dialog.ShowDialog();
