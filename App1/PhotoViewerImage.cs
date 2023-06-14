@@ -506,7 +506,8 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
+                string SQL;
+                SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
@@ -538,7 +539,6 @@ namespace PhotoViewerPRCVI
                     names[currentItem] = row.Field<int>("MarkupID").ToString() + ": " + name;
                     currentItem++;
                 }
-
             }
             catch (Exception ex)
             {
@@ -552,6 +552,404 @@ namespace PhotoViewerPRCVI
             return names;
         }
         
+        /// <summary>
+        /// Поиск всех названий размеченных снимков (связь с датой)
+        /// </summary>
+        /// <param name="OriginalID"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static string[] FindImageNamesAndIDs(int OriginalID, DateTime date)
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //получение размера массива 
+                string SQL;
+                SQL = "SELECT Count(MarkupID) FROM dbo.Markups WHERE (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение ID и названия оригиналов из БД 
+                SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups WHERE (OriginalID = " + OriginalID.ToString() + ") AND (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("IDandPath", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
+                SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable IDPathTable = new DataTable();
+                adapter.Fill(IDPathTable);
+
+                int currentItem = 0;
+
+                //вывод ID оригиналов в item
+                foreach (DataRow row in IDPathTable.Rows)
+                {
+                    string path = row.Field<string>("Picturepath");
+                    string[] pathsplit = path.Split('\\');
+                    string name = pathsplit[pathsplit.Length - 1];
+
+                    names[currentItem] = row.Field<int>("MarkupID").ToString() + ": " + name;
+                    currentItem++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
+        //
+        /// <summary>
+        /// Поиск всех названий снимков (оригинальный/размеченный) с привязкой к дате, региону, спутнику
+        /// </summary>
+        /// <param name="type">Тип снимка</param>
+        /// <returns></returns>
+        public static string[] FindImageNamesAndIDs(string type, string date, string region, string sputnik)
+        {
+            string[] names = new string[0];
+            string SQLplus = "";
+            if (date != null) SQLplus += " WHERE (Date = '" + date + "')";
+            if (region != null)
+            {
+                if (SQLplus != "") SQLplus += " AND ";
+                else SQLplus += "WHERE ";
+                SQLplus += "(Region = '" + region + "')";
+            }
+            if (sputnik != null) {
+                if (SQLplus != "") SQLplus += " AND ";
+                else SQLplus += "WHERE ";
+                SQLplus += "(Sputnik = '" + sputnik + "')";
+            }
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                if (type == "markup")
+                {
+                    //получение размера массива 
+                    string SQL = "SELECT Count(MarkupID) FROM dbo.Markups" + SQLplus;
+
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                    names = new string[namesSize];
+
+                    //получение ID и названия оригиналов из БД 
+                    SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups" + SQLplus;
+                    command = new SqlCommand(SQL, connection);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    adapter.InsertCommand = new SqlCommand("IDandPath", connection);
+                    adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                    adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
+                    SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                    parameter.Direction = ParameterDirection.Output;
+
+                    //вывод в таблицу хранения
+                    DataTable IDPathTable = new DataTable();
+                    adapter.Fill(IDPathTable);
+
+                    int currentItem = 0;
+
+                    //вывод ID оригиналов в item
+                    foreach (DataRow row in IDPathTable.Rows)
+                    {
+                        string path = row.Field<string>("Picturepath");
+                        string[] pathsplit = path.Split('\\');
+                        string name = pathsplit[pathsplit.Length - 1];
+
+                        names[currentItem] = row.Field<int>("MarkupID").ToString() + ": " + name;
+                        currentItem++;
+                    }
+                }
+                else
+                {
+                    //получение размера массива 
+                    string SQL = "SELECT Count(OriginalID) FROM dbo.Originals" + SQLplus;
+                    SqlCommand command = new SqlCommand(SQL, connection);
+                    int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                    names = new string[namesSize];
+
+                    //получение ID и названия оригиналов из БД 
+                    SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals" + SQLplus;
+                    command = new SqlCommand(SQL, connection);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    adapter.InsertCommand = new SqlCommand("IDandPath", connection);
+                    adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                    adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 75, "Picturepath"));
+                    SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@OriginalID", SqlDbType.Int, 10, "OriginalID");
+                    parameter.Direction = ParameterDirection.Output;
+
+                    //вывод в таблицу хранения
+                    DataTable IDPathTable = new DataTable();
+                    adapter.Fill(IDPathTable);
+
+                    int currentItem = 0;
+
+                    //вывод ID оригиналов в item
+                    foreach (DataRow row in IDPathTable.Rows)
+                    {
+                        string path = row.Field<string>("Picturepath");
+                        string[] pathsplit = path.Split('\\');
+                        string name = pathsplit[pathsplit.Length - 1];
+
+                        names[currentItem] = row.Field<int>("OriginalID").ToString() + ": " + name;
+                        currentItem++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
+        //
+
+        /// <summary>
+        /// Поиск всех дат создания оригинала
+        /// </summary>
+        /// <returns></returns>
+        public static string[] FindAllOrigDates()
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //получение размера массива 
+                string SQL = "SELECT Count(DISTINCT Date) FROM dbo.Originals";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение
+                SQL = "SELECT DISTINCT Date FROM dbo.Originals";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("OrigDates", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                //SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                //parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable SputTable = new DataTable();
+                adapter.Fill(SputTable);
+
+                int currentItem = 0;
+
+                //вывод в массив
+                foreach (DataRow row in SputTable.Rows)
+                {
+                    names[currentItem] = row.Field<DateTime>("Date").ToString("dd'-'MM'-'yyyy'\x020'HH':'mm");
+                    currentItem++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Поиск всех дат создания разметки
+        /// </summary>
+        /// <returns></returns>
+        public static string[] FindAllMarkDates()
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //получение размера массива 
+                string SQL = "SELECT Count(DISTINCT Date) FROM dbo.Markups";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение
+                SQL = "SELECT DISTINCT Date FROM dbo.Markups";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("MarkDates", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
+                //SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                //parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable SputTable = new DataTable();
+                adapter.Fill(SputTable);
+
+                int currentItem = 0;
+
+                //вывод в массив
+                foreach (DataRow row in SputTable.Rows)
+                {
+                    names[currentItem] = row.Field<DateTime>("Date").ToString("dd'-'MM'-'yyyy'\x020'HH':'mm");
+                    currentItem++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Поиск всех названий спутников
+        /// </summary>
+        /// <returns></returns>
+        public static string[] FindAllSputniks()
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //получение размера массива 
+                string SQL = "SELECT Count(DISTINCT Sputnik) FROM dbo.Originals";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение ID и названия оригиналов из БД 
+                SQL = "SELECT DISTINCT Sputnik FROM dbo.Originals";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("Sputniks", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Sputnik", SqlDbType.NChar, 75, "Sputnik"));
+                //SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                //parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable SputTable = new DataTable();
+                adapter.Fill(SputTable);
+
+                int currentItem = 0;
+
+                //вывод ID оригиналов в item
+                foreach (DataRow row in SputTable.Rows)
+                {
+                    names[currentItem] = row.Field<string>("Sputnik");
+                    currentItem++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Поиск всех названий регионов
+        /// </summary>
+        /// <returns></returns>
+        public static string[] FindAllRegions()
+        {
+            string[] names = new string[0];
+
+            try
+            {
+                //открытие подключения
+                if (connection.State == ConnectionState.Closed) connection.Open();
+
+                //получение размера массива 
+                string SQL = "SELECT Count(DISTINCT Region) FROM dbo.Originals";
+                SqlCommand command = new SqlCommand(SQL, connection);
+                int namesSize = Convert.ToInt32(command.ExecuteScalar());
+                names = new string[namesSize];
+
+                //получение ID и названия оригиналов из БД 
+                SQL = "SELECT DISTINCT Region FROM dbo.Originals";
+                command = new SqlCommand(SQL, connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                adapter.InsertCommand = new SqlCommand("Regions", connection);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Region", SqlDbType.NChar, 75, "Region"));
+                //SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
+                //parameter.Direction = ParameterDirection.Output;
+
+                //вывод в таблицу хранения
+                DataTable RegTable = new DataTable();
+                adapter.Fill(RegTable);
+
+                int currentItem = 0;
+
+                //вывод ID оригиналов в item
+                foreach (DataRow row in RegTable.Rows)
+                {
+                    names[currentItem] = row.Field<string>("Region");
+                    currentItem++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            return names;
+        }
+
         /// <summary>
         /// Вывод подробной информации из таблицы БД в таблицу в окне
         /// </summary>
