@@ -49,9 +49,9 @@ namespace PhotoViewerPRCVI
                 SputnikBox.Visibility = Visibility.Hidden;
                 OrigSputLabel.Content = "Оригинал:";
 
-                this.MinWidth = 285;
-                this.MaxWidth = 285;
-                this.Width = 285;
+                this.MinWidth = 385;
+                this.MaxWidth = 385;
+                this.Width = 385;
             }
             else
             {
@@ -65,9 +65,9 @@ namespace PhotoViewerPRCVI
                 SputnikBox.Visibility = Visibility.Visible;
                 OrigSputLabel.Content = "Спутник:";
 
-                this.MinWidth = 415;
-                this.MaxWidth = 415;
-                this.Width = 415;
+                this.MinWidth = 515;
+                this.MaxWidth = 515;
+                this.Width = 515;
             }
         }
 
@@ -78,6 +78,8 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void ChangeWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            ImageNameLabel.Content = "Изменяемый снимок: " + UpdatingImage.GetName();
+            ImageNameLabel.ToolTip = UpdatingImage.GetName();
             DateBox.DisplayDate = UpdatingImage.GetDate();
             DateBox.Text = DateBox.DisplayDate.ToString();
             if (type == "original")
@@ -105,20 +107,76 @@ namespace PhotoViewerPRCVI
         }
 
         /// <summary>
+        /// Загрузка поля с часами
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HoursBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i <= 23; i++)
+            {
+                hoursBox.Items.Add(i);
+                if (i == UpdatingImage.GetDate().Hour) hoursBox.SelectedIndex = i;
+            }
+        }
+
+        /// <summary>
+        /// Загрузка поля с минутами
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MinutesBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i <= 59; i++)
+            {
+                minutesBox.Items.Add(i);
+                if (i == UpdatingImage.GetDate().Minute) minutesBox.SelectedIndex = i;
+            }
+        }
+
+        /// <summary>
         /// Сохранить изменения и вернуться в главное окно
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void SaveAndBackToMain(object sender, RoutedEventArgs e)
         {
-            //сохранение изменений
+            //извлечение новой даты
+            DateTime NewDate = Convert.ToDateTime(DateBox.SelectedDate);
+            if (hoursBox.Text != "") NewDate = NewDate.AddHours(Convert.ToDouble(hoursBox.Text));
+            if (minutesBox.Text != "") NewDate = NewDate.AddMinutes(Convert.ToDouble(minutesBox.Text));
+
+            //зависимость сохранения от типа снимка
             if (type == "original")
             {
-                //PhotoViewerImage.UpdateOrigImageDB(UpdatingImage.GetID(), );
+                //извлечение информации о спутнике
+                string NewSputnik;
+                if (SputnikBox.Text == "")
+                {
+                    NewSputnik = UpdatingImage.GetSputnik();
+                }
+                else
+                {
+                    NewSputnik = SputnikBox.Text;
+                }
+
+                //извлечение информации о регионе
+                string NewRegion;
+                if (RegionBox.Text == "")
+                {
+                    NewRegion = UpdatingImage.GetRegion();
+                }
+                else
+                {
+                    NewRegion = RegionBox.Text;
+                }
+
+                //сохранение изменений
+                PhotoViewerImage.UpdateOrigImageDB(UpdatingImage.GetID(), NewDate, NewRegion, NewSputnik);
             }
             else
             {
-
+                PhotoViewerImage.UpdateMarkupImageDB(UpdatingImage.GetID(), NewDate, Convert.ToInt32(OriginalsBox.Text.Split(':')[0]));
             }
 
             //проверка загрузки главного окна, восстановление если окно закрыто

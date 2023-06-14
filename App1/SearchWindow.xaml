@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
         
+        WindowStyle="ToolWindow"
         Title="Найти снимок" Height="335" Width="300"
         MinHeight="335"
         MaxHeight="335">

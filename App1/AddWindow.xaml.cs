@@ -230,7 +230,7 @@ namespace PhotoViewerPRCVI
         {
             //данные для новой записи о снимке
             string AddingPath = AddFileName.Text;
-            DateTime AddingDate = DateSelector.DisplayDate;
+            DateTime AddingDate = Convert.ToDateTime(DateSelector.SelectedDate);
             double AddingHours;
             double AddingMinutes;
 

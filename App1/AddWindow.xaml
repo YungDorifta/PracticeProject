@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
         
+        WindowStyle="ToolWindow"
         Loaded="AddWindowLoading"
         Title="Добавить снимок" 
         Height="260" Width="450"

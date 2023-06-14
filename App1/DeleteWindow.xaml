@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
         
+        WindowStyle="ToolWindow"
         Title="Удалить информацию о снимке?" 
         Height="150" Width="370" 
         MinHeight="150" MinWidth="370"

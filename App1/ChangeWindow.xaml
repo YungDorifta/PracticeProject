@@ -5,10 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewerPRCVI"
         mc:Ignorable="d"
+        
+        WindowStyle="ToolWindow"
         Title="Изменить информацию о снимке" 
-        Height="150" Width="411"
-        MinHeight="150" MinWidth="411"
-        MaxHeight="150" MaxWidth="411"
+        Height="150" Width="515"
+        MinHeight="150" MinWidth="515"
+        MaxHeight="150" MaxWidth="515"
         Loaded="ChangeWindow_Loaded">
     <Grid>
         <Grid.RowDefinitions>
@@ -17,18 +19,21 @@
             <RowDefinition Height="40"/> 
         </Grid.RowDefinitions>
         
-        <Label Content="Изменяемый снимок: " Grid.Row="0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+        <Label x:Name="ImageNameLabel" Content="Изменяемый снимок: " Grid.Row="0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
 
         <Grid x:Name="UpdatingInfoGrid" Grid.Row="1">
-            <Label x:Name="DateLabel" Content="Дата:" Margin="10,0,10,0"/>
+            <Label x:Name="DateLabel" Content="Дата и время:" Margin="10,0,10,0"/>
             <DatePicker x:Name="DateBox" Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,10,0"/>
+            <ComboBox x:Name="hoursBox" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="140,0,0,0" Width="40" Height="25" Loaded="HoursBox_Loaded"/>
+            <Label HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="180,0,0,0" Content=":"/>
+            <ComboBox x:Name="minutesBox" HorizontalAlignment="Left" Margin="193,0,0,0"  VerticalAlignment="Bottom" Width="40" Height="25" Loaded="MinutesBox_Loaded"/>
 
-            <Label x:Name="OrigSputLabel" Content="Оригинал:" Margin="140,0,10,0"/>
+            <Label x:Name="OrigSputLabel" Content="Оригинал:" HorizontalAlignment="Right" Width="120" Margin="0,0,10,0"/>
             <ComboBox x:Name="OriginalsBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
-            <TextBox x:Name="SputnikBox" Height="25" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="140,0,10,0"/>
+            <TextBox x:Name="SputnikBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
 
-            <Label x:Name="RegionLabel" Content="Регион:" Margin="270,0,10,0"/>
-            <TextBox x:Name="RegionBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
+            <Label x:Name="RegionLabel" Content="Регион:" HorizontalAlignment="Right" Width="120" Margin="0,0,140,0"/>
+            <TextBox x:Name="RegionBox" Height="25" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,140,0"/>
         </Grid>
 
         <Button Content="Отмена" Grid.Row="2" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Click="BackToMain"/>

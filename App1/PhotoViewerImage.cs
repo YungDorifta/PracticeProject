@@ -213,7 +213,7 @@ namespace PhotoViewerPRCVI
                 newID++;
 
                 //добавление записи о снимке в таблицу БД
-                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
+                string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
                 SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
                       AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
                 command = new SqlCommand(SQL, connection);
@@ -249,7 +249,7 @@ namespace PhotoViewerPRCVI
                 newID++;
 
                 //добавление записи о снимке в таблицу БД
-                string AddingDateString = AddingDate.ToString("yyyy'-'MM'-'dd'\x020'HH':'mm");
+                string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
                 SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," +
                     AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath + "');";
                 command = new SqlCommand(SQL, connection);
@@ -264,8 +264,14 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Open) connection.Close();
             }
         }
-
-        //!!!сделать: изменение информации о снимке
+        
+        /// <summary>
+        /// Изменение информации об оригинальном снимке
+        /// </summary>
+        /// <param name="ID">ID снимка</param>
+        /// <param name="date">Новая дата создания снимка</param>
+        /// <param name="Region">Новый регион съемки</param>
+        /// <param name="Sputnik">Новый спутник съемки</param>
         public static void UpdateOrigImageDB(int ID, DateTime date, string Region, string Sputnik)
         {
             try
@@ -274,7 +280,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //изменение записи в таблице
-                string SQL = "UPDATE dbo.Originals SET Date = '" + date + "', Region = '" + Region + "', Sputnik = '" + Sputnik + "' WHERE (OriginalID = " + ID + ")";
+                string SQL = "UPDATE dbo.Originals SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', Sputnik = '" + Sputnik + "', Region = '" + Region + "' WHERE (OriginalID = " + ID + ")"; //, (Region = '" + Region + "'), (Sputnik = '" + Sputnik + "')
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -288,6 +294,12 @@ namespace PhotoViewerPRCVI
             }
         }
 
+        /// <summary>
+        /// Изменение информации об размеченном снимке
+        /// </summary>
+        /// <param name="ID">ID снимка</param>
+        /// <param name="date">Новая дата создания снимка</param>
+        /// <param name="origID">Новый ID оригинала</param>
         public static void UpdateMarkupImageDB(int ID, DateTime date, int origID)
         {
             try
@@ -296,7 +308,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //изменение записи в таблице
-                string SQL = "UPDATE dbo.Markups SET Date = '" + date + "', OriginalID = '" + origID + "' WHERE (MarkupID = " + ID + ")";
+                string SQL = "UPDATE dbo.Markups SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', OriginalID = '" + origID + "' WHERE (MarkupID = " + ID + ")";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -309,8 +321,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Open) connection.Close();
             }
         }
-        //
-
+        
         /// <summary>
         /// Удаление информации о снимке из БД
         /// </summary>
