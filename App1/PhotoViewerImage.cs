@@ -11,9 +11,14 @@ namespace PhotoViewerPRCVI
 {
     public partial class PhotoViewerImage
     {
-        //подключение к БД (для всех изображений)
+        //создание подключения к БД
         static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
         static SqlConnection connection = new SqlConnection(connectionString);
+        //названия таблиц в БД
+        //static string OriginalsTableName = "dbo.Originals";
+        //static string MarkupsTableName = "dbo.Markups"; 
+        static string OriginalsTableName = ConfigurationManager.ConnectionStrings["OriginalsTableName"].ToString();
+        static string MarkupsTableName = ConfigurationManager.ConnectionStrings["MarkupsTableName"].ToString();
 
         //данные конкретного изображения
         string Type;
@@ -43,7 +48,7 @@ namespace PhotoViewerPRCVI
             if (Type == "original")
             {
                 //формирование команды для извлечения информации об изображении
-                SQL = "SELECT * FROM dbo.Originals WHERE (OriginalID=" + ID + ")";
+                SQL = "SELECT * FROM " + OriginalsTableName + " WHERE (OriginalID=" + ID + ")";
                 command = new SqlCommand(SQL, connection);
 
                 //адаптер для извлечения информации из БД в Таблицу
@@ -77,7 +82,7 @@ namespace PhotoViewerPRCVI
             else
             {
                 //формирование команды для извлечения информации об изображении
-                SQL = "SELECT * FROM dbo.Markups WHERE (MarkupID=" + ID + ")";
+                SQL = "SELECT * FROM " +  MarkupsTableName + " WHERE (MarkupID=" + ID + ")";
                 command = new SqlCommand(SQL, connection);
 
                 //адаптер для извлечения информации из БД в Таблицу
@@ -207,14 +212,14 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //поиск доступного ID для добавления картинки
-                string SQL = "SELECT MAX(OriginalID) FROM dbo.Originals";
+                string SQL = "SELECT MAX(OriginalID) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int newID = (int)command.ExecuteScalar();
                 newID++;
 
                 //добавление записи о снимке в таблицу БД
                 string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
-                SQL = "INSERT INTO dbo.Originals (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
+                SQL = "INSERT INTO " + OriginalsTableName  + " (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
                       AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
                 command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
@@ -243,14 +248,14 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //поиск доступного ID для добавления картинки
-                string SQL = "SELECT MAX(MarkupID) FROM dbo.Markups";
+                string SQL = "SELECT MAX(MarkupID) FROM " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int newID = (int)command.ExecuteScalar();
                 newID++;
 
                 //добавление записи о снимке в таблицу БД
                 string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
-                SQL = "INSERT INTO dbo.Markups (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," +
+                SQL = "INSERT INTO " +  MarkupsTableName + " (MarkupID, OriginalID, Date, Picturepath) VALUES (" + newID + "," +
                     AddingOriginalID + ", '" + AddingDateString + "', '" + AddingPath + "');";
                 command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
@@ -280,7 +285,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //изменение записи в таблице
-                string SQL = "UPDATE dbo.Originals SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', Sputnik = '" + Sputnik + "', Region = '" + Region + "' WHERE (OriginalID = " + ID + ")"; //, (Region = '" + Region + "'), (Sputnik = '" + Sputnik + "')
+                string SQL = "UPDATE " + OriginalsTableName  + " SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', Sputnik = '" + Sputnik + "', Region = '" + Region + "' WHERE (OriginalID = " + ID + ")"; //, (Region = '" + Region + "'), (Sputnik = '" + Sputnik + "')
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -308,7 +313,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //изменение записи в таблице
-                string SQL = "UPDATE dbo.Markups SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', OriginalID = '" + origID + "' WHERE (MarkupID = " + ID + ")";
+                string SQL = "UPDATE " +  MarkupsTableName + " SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', OriginalID = '" + origID + "' WHERE (MarkupID = " + ID + ")";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -337,8 +342,8 @@ namespace PhotoViewerPRCVI
                 string SQL;
 
                 //удаление записи из ДБ
-                if (type == "original") SQL = "DELETE FROM dbo.Originals WHERE (OriginalID = " + ID + ")";
-                else SQL = "DELETE FROM dbo.Markups WHERE (MarkupID = " + ID + ")";
+                if (type == "original") SQL = "DELETE FROM " + OriginalsTableName  + " WHERE (OriginalID = " + ID + ")";
+                else SQL = "DELETE FROM " +  MarkupsTableName + " WHERE (MarkupID = " + ID + ")";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -371,13 +376,13 @@ namespace PhotoViewerPRCVI
                 int OriginalID, MarkupID;
 
                 //получение ID оригинального снимка по умолчанию
-                SQL = "SELECT Min(OriginalID) FROM dbo.Originals";
+                SQL = "SELECT Min(OriginalID) FROM " + OriginalsTableName;
                 command = new SqlCommand(SQL, connection);
                 OriginalID = (int)command.ExecuteScalar();
                 MW.OriginalImage = new PhotoViewerImage("original", OriginalID);
 
                 //получение ID размеченного снимка по умолчанию
-                SQL = "SELECT Min(MarkupID) FROM dbo.Markups WHERE (OriginalID = " + OriginalID + ")";
+                SQL = "SELECT Min(MarkupID) FROM " +  MarkupsTableName + " WHERE (OriginalID = " + OriginalID + ")";
                 command = new SqlCommand(SQL, connection);
                 MarkupID = (int)command.ExecuteScalar();
                 MW.MarkupImage = new PhotoViewerImage("markup", MarkupID);
@@ -409,13 +414,13 @@ namespace PhotoViewerPRCVI
                 if (type == "markup")
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
+                    string SQL = "SELECT Count(MarkupID) FROM " +  MarkupsTableName + "";
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups";
+                    SQL = "SELECT MarkupID, Picturepath FROM " +  MarkupsTableName + "";
                     command = new SqlCommand(SQL, connection);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -445,13 +450,13 @@ namespace PhotoViewerPRCVI
                 else
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(OriginalID) FROM dbo.Originals";
+                    string SQL = "SELECT Count(OriginalID) FROM " + OriginalsTableName;
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals";
+                    SQL = "SELECT OriginalID, Picturepath FROM " + OriginalsTableName;
                     command = new SqlCommand(SQL, connection);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -507,13 +512,13 @@ namespace PhotoViewerPRCVI
 
                 //получение размера массива 
                 string SQL;
-                SQL = "SELECT Count(MarkupID) FROM dbo.Markups";
+                SQL = "SELECT Count(MarkupID) FROM " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение ID и названия оригиналов из БД 
-                SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups WHERE (OriginalID = " + OriginalID.ToString() + ")";
+                SQL = "SELECT MarkupID, Picturepath FROM " +  MarkupsTableName + " WHERE (OriginalID = " + OriginalID.ToString() + ")";
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -569,13 +574,13 @@ namespace PhotoViewerPRCVI
 
                 //получение размера массива 
                 string SQL;
-                SQL = "SELECT Count(MarkupID) FROM dbo.Markups WHERE (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
+                SQL = "SELECT Count(MarkupID) FROM " +  MarkupsTableName + " WHERE (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение ID и названия оригиналов из БД 
-                SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups WHERE (OriginalID = " + OriginalID.ToString() + ") AND (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
+                SQL = "SELECT MarkupID, Picturepath FROM " +  MarkupsTableName + " WHERE (OriginalID = " + OriginalID.ToString() + ") AND (Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "')";
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -654,14 +659,14 @@ namespace PhotoViewerPRCVI
                 if (type == "markup")
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(MarkupID) FROM dbo.Markups ";
+                    string SQL = "SELECT Count(MarkupID) FROM " +  MarkupsTableName + " ";
                     if (date != null) if (date != "") SQL += " WHERE (Date = '" + date + "')";
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups ";
+                    SQL = "SELECT MarkupID, Picturepath FROM " +  MarkupsTableName + " ";
                     if (date != null) if (date != "") SQL += " WHERE (Date = '" + date + "')";
                     command = new SqlCommand(SQL, connection);
 
@@ -691,13 +696,13 @@ namespace PhotoViewerPRCVI
                 else
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(OriginalID) FROM dbo.Originals " + SQLplus;
+                    string SQL = "SELECT Count(OriginalID) FROM " + OriginalsTableName  + " " + SQLplus;
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals " + SQLplus;
+                    SQL = "SELECT OriginalID, Picturepath FROM " + OriginalsTableName  + " " + SQLplus;
                     command = new SqlCommand(SQL, connection);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -751,13 +756,13 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(DISTINCT Date) FROM dbo.Originals";
+                string SQL = "SELECT Count(DISTINCT Date) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение
-                SQL = "SELECT DISTINCT Date FROM dbo.Originals";
+                SQL = "SELECT DISTINCT Date FROM " + OriginalsTableName;
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -806,13 +811,13 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(DISTINCT Date) FROM dbo.Markups";
+                string SQL = "SELECT Count(DISTINCT Date) FROM " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение
-                SQL = "SELECT DISTINCT Date FROM dbo.Markups";
+                SQL = "SELECT DISTINCT Date FROM " +  MarkupsTableName + "";
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -861,13 +866,13 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(DISTINCT Sputnik) FROM dbo.Originals";
+                string SQL = "SELECT Count(DISTINCT Sputnik) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение ID и названия оригиналов из БД 
-                SQL = "SELECT DISTINCT Sputnik FROM dbo.Originals";
+                SQL = "SELECT DISTINCT Sputnik FROM " + OriginalsTableName;
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -916,13 +921,13 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(DISTINCT Region) FROM dbo.Originals";
+                string SQL = "SELECT Count(DISTINCT Region) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение ID и названия оригиналов из БД 
-                SQL = "SELECT DISTINCT Region FROM dbo.Originals";
+                SQL = "SELECT DISTINCT Region FROM " + OriginalsTableName;
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -990,7 +995,7 @@ namespace PhotoViewerPRCVI
 
                 /*
                 //полная команда (SQL query + connection query) для извлечения информации
-                string SQL = "SELECT dbo.Originals.Date, dbo.Markups.Date, Region, Sputnik, Region FROM dbo.Originals, dbo.Markups";
+                string SQL = "SELECT " + OriginalsTableName + ".Date, " +  MarkupsTableName + ".Date, Region, Sputnik, Region FROM " + OriginalsTableName  + ", " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
 
                 //адаптер для извлечения информации из БД в Таблицу
