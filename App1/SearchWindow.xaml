@@ -23,7 +23,7 @@
             <Label Content="Размеченный снимок" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,40,0,0"/>
             
             <ComboBox x:Name="OriginalIDTB" HorizontalAlignment="Right" Height="25" Margin="0,5,5,0" VerticalAlignment="Top" Width="120" Loaded="OriginalIDTB_Loaded" SelectionChanged="OriginalIDTB_SelectionChanged"/>
-            <ComboBox x:Name="MarkupIDTB" HorizontalAlignment="Right" Height="25" Margin="0,40,5,0" VerticalAlignment="Top" Width="120"/>
+            <ComboBox x:Name="MarkupIDTB" HorizontalAlignment="Right" Height="25" Margin="0,40,5,0" VerticalAlignment="Top" Width="120" SelectionChanged="MarkupIDTB_SelectionChanged"/>
         </Grid>
 
         <Label Grid.Row="1" Content="Дополнительные фильтры для поиска:" HorizontalAlignment="Center" FontWeight="Bold"/>
@@ -42,7 +42,7 @@
 
         <Grid Grid.Row="3">
             <Button Content="Отмена" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,5" Height="25" Width="100" Click="BackToMain"/>
-            <Button Content="Найти" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Height="25" Width="100" Click="LoadAndBackToMain"/>
+            <Button x:Name="ButtonFind" Content="Найти" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Height="25" Width="100" Click="LoadAndBackToMain"/>
         </Grid>
     </Grid>
 </Window>

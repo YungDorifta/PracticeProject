@@ -21,6 +21,7 @@ namespace PhotoViewerPRCVI
             InitializeComponent();
             type = "original";
             this.Title = "Добавить оригинальный снимок";
+            Sputnik.Text = "Aist-2D";
         }
 
         /// <summary>

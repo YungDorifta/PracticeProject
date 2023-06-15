@@ -103,18 +103,30 @@ namespace PhotoViewer
                 //найти картики по умочанию, если ID не заданы
                 if (OriginalImage == null || MarkupImage == null)
                 {
-                    PhotoViewerImage.ResetToDefaultImagesInMain(this);
+                    //PhotoViewerImage.ResetToDefaultImagesInMain(this);
+                    TheOriginalWindowImage.Source = null;
+                    TheMarkupWindowImage.Source = null;
 
+                    ButtonMoreInfo.IsEnabled = false;
+                    ButtonChangeInfo.IsEnabled = false;
+                    ButtonDeleteInfo.IsEnabled = false;
                 }
-                //вывести картинки в окно
-                OriginalImage.LoadImage(TheOriginalWindowImage);
-                MarkupImage.LoadImage(TheMarkupWindowImage);
-                
-                //вывести информацию о картинках
-                OriginalLabel.Content = "Оригинал: " + OriginalImage.GetName();
-                MarkupLabel.Content = "Разметка: " + MarkupImage.GetName();
-                OriginalLabel.ToolTip = OriginalImage.GetName();
-                MarkupLabel.ToolTip = MarkupImage.GetName();
+                else
+                {
+                    //вывести картинки в окно
+                    OriginalImage.LoadImage(TheOriginalWindowImage);
+                    MarkupImage.LoadImage(TheMarkupWindowImage);
+                    //вывести информацию о картинках
+                    OriginalLabel.Content = "Оригинал: " + OriginalImage.GetName();
+                    MarkupLabel.Content = "Разметка: " + MarkupImage.GetName();
+                    OriginalLabel.ToolTip = OriginalImage.GetName();
+                    MarkupLabel.ToolTip = MarkupImage.GetName();
+
+                    //
+                    ButtonMoreInfo.IsEnabled = true;
+                    ButtonChangeInfo.IsEnabled = true;
+                    ButtonDeleteInfo.IsEnabled = true;
+                }
             }
             catch (Exception ex)
             {
@@ -178,7 +190,12 @@ namespace PhotoViewer
             }
 
             //открыть окно поиска снимков
-            SearchPhotos SPW = new SearchPhotos(OriginalImage.GetID().ToString(), MarkupImage.GetID().ToString());
+            SearchPhotos SPW;
+            if (OriginalImage == null || MarkupImage == null)
+            {
+                SPW = new SearchPhotos(null, null);
+            }
+            else SPW = new SearchPhotos(OriginalImage.GetID().ToString(), MarkupImage.GetID().ToString());
             SPW.Show();
             this.Close();
         }
@@ -333,9 +350,20 @@ namespace PhotoViewer
         /// </summary>
         public void ReloadToDefaultImages()
         {
-            PhotoViewerImage.ResetToDefaultImagesInMain(this);
-            OriginalImage.LoadImage(TheOriginalWindowImage);
-            MarkupImage.LoadImage(TheMarkupWindowImage);
+            //PhotoViewerImage.ResetToDefaultImagesInMain(this);
+            //OriginalImage.LoadImage(TheOriginalWindowImage);
+            //MarkupImage.LoadImage(TheMarkupWindowImage);
+
+            this.OriginalImage = null;
+            this.MarkupImage = null;
+            TheOriginalWindowImage.Source = null;
+            TheMarkupWindowImage.Source = null;
+
+            OriginalLabel.Content = "Оригинал:";
+            MarkupLabel.Content = "Разметка:";
+            ButtonMoreInfo.IsEnabled = false;
+            ButtonChangeInfo.IsEnabled = false;
+            ButtonDeleteInfo.IsEnabled = false;
         }
     }
 }

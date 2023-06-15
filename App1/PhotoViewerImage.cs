@@ -214,8 +214,17 @@ namespace PhotoViewerPRCVI
                 //поиск доступного ID для добавления картинки
                 string SQL = "SELECT MAX(OriginalID) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
-                int newID = (int)command.ExecuteScalar();
-                newID++;
+                string newIDstring = Convert.ToString(command.ExecuteScalar());
+
+                int newID = 1;
+                if (newIDstring != null)
+                {
+                    if (newIDstring != "")
+                    {
+                        newID = Convert.ToInt32(newIDstring);
+                        newID++;
+                    }
+                }
 
                 //добавление записи о снимке в таблицу БД
                 string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
@@ -250,8 +259,16 @@ namespace PhotoViewerPRCVI
                 //поиск доступного ID для добавления картинки
                 string SQL = "SELECT MAX(MarkupID) FROM " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
-                int newID = (int)command.ExecuteScalar();
-                newID++;
+                string newIDstring = Convert.ToString(command.ExecuteScalar());
+                int newID = 1;
+                if (newIDstring != null)
+                {
+                    if (newIDstring != "")
+                    {
+                        newID = Convert.ToInt32(newIDstring);
+                        newID++;
+                    }
+                }
 
                 //добавление записи о снимке в таблицу БД
                 string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");

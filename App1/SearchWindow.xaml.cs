@@ -34,8 +34,14 @@ namespace PhotoViewerPRCVI
         public SearchPhotos(string OriginalID, string MarkupID)
         {
             InitializeComponent();
-            OriginalImage = new PhotoViewerImage("original", Convert.ToInt32(OriginalID));
-            MarkupImage = new PhotoViewerImage("markup", Convert.ToInt32(MarkupID));
+            if (OriginalID != null && MarkupID != null)
+            {
+                if (OriginalID != "" && MarkupID != "")
+                {
+                    OriginalImage = new PhotoViewerImage("original", Convert.ToInt32(OriginalID));
+                    MarkupImage = new PhotoViewerImage("markup", Convert.ToInt32(MarkupID));
+                }
+            }
         }
 
         /// <summary>
@@ -45,29 +51,38 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OriginalIDTB_Loaded(object sender, RoutedEventArgs e)
         {
-            //загрузка списка
-            int selected = -1;
-            int current = 0;
-            string[] names = PhotoViewerImage.FindImageNamesAndIDs("original");
-            foreach (string name in names)
+            try
             {
-                if (name != null)
+                //загрузка списка
+                int selected = -1;
+                int current = 0;
+                string[] names = PhotoViewerImage.FindImageNamesAndIDs("original");
+                foreach (string name in names)
                 {
-                    OriginalIDTB.Items.Add(name);
-                    if (name.Split(':')[0] == OriginalImage.GetID().ToString()) selected = current;
-                    current++;
+                    if (name != null)
+                    {
+                        OriginalIDTB.Items.Add(name);
+                        if (OriginalImage != null)
+                        {
+                            if (name.Split(':')[0] == OriginalImage.GetID().ToString()) selected = current;
+                        }
+                        current++;
+                    }
                 }
-            }
 
-            //выбор фото с главного окна
-            if (selected != -1)
-            {
-                OriginalIDTB.SelectedIndex = selected;
+                //выбор фото с главного окна
+                if (selected != -1)
+                {
+                    OriginalIDTB.SelectedIndex = selected;
+                }
+                else if (OriginalIDTB.Items.Count > 0) OriginalIDTB.SelectedIndex = 0;
             }
-            else if (OriginalIDTB.Items.Count > 0) OriginalIDTB.SelectedIndex = 0;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
         
-        //доделать: учет фильтров
         /// <summary>
         /// Перезагрузка разметок при выборе другого оригинала
         /// </summary>
@@ -75,45 +90,94 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OriginalIDTB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (OriginalIDTB.IsLoaded)
+            try
             {
-                //очистить список
-                MarkupIDTB.Items.Clear();
-
-                //если выбран оригинал
-                if (OriginalIDTB.SelectedItem != null)
+                if (OriginalIDTB.IsLoaded)
                 {
-                    //если оригинал содержит значение
-                    if (OriginalIDTB.SelectedItem.ToString() != "")
+                    //очистить список
+                    MarkupIDTB.Items.Clear();
+
+                    //если выбран оригинал
+                    if (OriginalIDTB.SelectedItem != null)
                     {
-                        //извлечь ID
-                        int NewOriginalID = Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]);
-
-                        //перезагрузить список разметок
-                        int selected = -1;
-                        int current = 0;
-                        string[] names = PhotoViewerImage.FindImageNamesAndIDs(NewOriginalID);
-                        foreach (string name in names)
+                        //если оригинал содержит значение
+                        if (OriginalIDTB.SelectedItem.ToString() != "")
                         {
-                            if (name != null)
+                            //извлечь ID
+                            int NewOriginalID = Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]);
+
+                            //извлечение аргументов (дата)
+                            string dateIn = null;
+                            if (MarkupDate.SelectedItem != null)
                             {
-                                MarkupIDTB.Items.Add(name);
-                                if (name.Split(':')[0] == MarkupImage.GetID().ToString()) selected = current;
-                                current++;
+                                if (MarkupDate.SelectedItem.ToString() != "") dateIn = MarkupDate.SelectedItem.ToString();
                             }
-                        }
 
-                        //выбрать элемент, если совпадает с загруженным
-                        if (selected != -1)
-                        {
-                            MarkupIDTB.SelectedIndex = selected;
+                            //извлечение нового списка разметок
+                            string[] names = PhotoViewerImage.FindImageNamesAndIDs(NewOriginalID);
+                            if (dateIn != null)
+                            {
+                                if (dateIn != "")
+                                {
+                                    DateTime NewDate = Convert.ToDateTime(dateIn);
+                                    names = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]), NewDate);
+                                }
+                            }
+
+                            //перезагрузить список разметок
+                            int selected = -1;
+                            int current = 0;
+                            foreach (string name in names)
+                            {
+                                if (name != null)
+                                {
+                                    MarkupIDTB.Items.Add(name);
+                                    if (MarkupImage != null)
+                                    {
+                                        if (name.Split(':')[0] == MarkupImage.GetID().ToString()) selected = current;
+                                    }
+                                    current++;
+                                }
+                            }
+
+                            //выбрать элемент, если совпадает с загруженным
+                            if (selected != -1)
+                            {
+                                MarkupIDTB.SelectedIndex = selected;
+                            }
+                            else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
                         }
-                        else if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
                     }
+
+                    if (OriginalIDTB.SelectedItem != null && MarkupIDTB.SelectedItem != null)
+                    {
+                        if (OriginalIDTB.SelectedItem.ToString() != "" && MarkupIDTB.SelectedItem.ToString() != "") ButtonFind.IsEnabled = true;
+                        else ButtonFind.IsEnabled = false;
+                    }
+                    else ButtonFind.IsEnabled = false;
                 }
+                else ButtonFind.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
+        /// <summary>
+        /// При изменении разметки
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MarkupIDTB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (OriginalIDTB.SelectedItem != null && MarkupIDTB.SelectedItem != null)
+            {
+                if (OriginalIDTB.SelectedItem.ToString() != "" && MarkupIDTB.SelectedItem.ToString() != "") ButtonFind.IsEnabled = true;
+                else ButtonFind.IsEnabled = false;
+            }
+            else ButtonFind.IsEnabled = false;
+        }
 
         //фильтры поиска
         /// <summary>
@@ -123,10 +187,17 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OrigDate_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] origDates = PhotoViewerImage.FindAllOrigDates();
-            foreach (string date in origDates)
+            try
             {
-                OrigDate.Items.Add(date);
+                string[] origDates = PhotoViewerImage.FindAllOrigDates();
+                foreach (string date in origDates)
+                {
+                    OrigDate.Items.Add(date);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -137,10 +208,17 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void MarkupDate_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] markDates = PhotoViewerImage.FindAllMarkDates();
-            foreach (string date in markDates)
+            try
             {
-                MarkupDate.Items.Add(date);
+                string[] markDates = PhotoViewerImage.FindAllMarkDates();
+                foreach (string date in markDates)
+                {
+                    MarkupDate.Items.Add(date);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
         
@@ -151,10 +229,17 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void Region_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] regions= PhotoViewerImage.FindAllRegions();
-            foreach (string region in regions)
+            try
             {
-                Region.Items.Add(region);
+                string[] regions= PhotoViewerImage.FindAllRegions();
+                foreach (string region in regions)
+                {
+                    Region.Items.Add(region);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -165,15 +250,21 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void Sputnik_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] sputniks = PhotoViewerImage.FindAllSputniks();
-            foreach (string sputnik in sputniks)
+            try
             {
-                Sputnik.Items.Add(sputnik);
-                //if (sputnik == OriginalImage.GetSputnik()) Sputnik.SelectedIndex = Sputnik.Items.Count - 1;
+                string[] sputniks = PhotoViewerImage.FindAllSputniks();
+                foreach (string sputnik in sputniks)
+                {
+                    Sputnik.Items.Add(sputnik);
+                    //if (sputnik == OriginalImage.GetSputnik()) Sputnik.SelectedIndex = Sputnik.Items.Count - 1;
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
-
-        //доделать: изменение фильтров оригинала
+        
         /// <summary>
         /// Изменение фильтров оригинала
         /// </summary>
@@ -181,34 +272,43 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void OrigFiltersChanged(object sender, SelectionChangedEventArgs e)
         {
-            OriginalIDTB.Items.Clear();
+            try
+            {
+                OriginalIDTB.Items.Clear();
 
-            string date = null;
-            string region = null;
-            string sputnik = null;
+                //извлечение данных фильтров
+                string date = null;
+                string region = null;
+                string sputnik = null;
+                if (OrigDate.SelectedItem != null)
+                {
+                    if (OrigDate.SelectedItem.ToString() != "") date = OrigDate.SelectedItem.ToString();
+                }
+                if (Sputnik.SelectedItem != null)
+                {
+                    if (Sputnik.SelectedItem.ToString() != "") sputnik = Sputnik.SelectedItem.ToString();
+                }
+                if (Region.SelectedItem != null)
+                {
+                    if (Region.SelectedItem.ToString() != "") region = Region.SelectedItem.ToString();
+                }
 
-            if (OrigDate.SelectedItem != null)
-            {
-                if (OrigDate.SelectedItem.ToString() != "") date = OrigDate.SelectedItem.ToString().Split()[0];
+                //извлечение нового списка из БД
+                string[] NewOrigs = PhotoViewerImage.FindImageNamesAndIDs("original", date, region, sputnik);
+
+                //загрузка списка из бд в окно
+                foreach (string orig in NewOrigs)
+                {
+                    OriginalIDTB.Items.Add(orig);
+
+                }
+                if (OriginalIDTB.Items.Count > 0) OriginalIDTB.SelectedIndex = 0;
             }
-            if (Sputnik.SelectedItem != null)
+            catch (Exception ex)
             {
-                if (Sputnik.SelectedItem.ToString() != "") sputnik = Sputnik.SelectedItem.ToString().Split()[0];
+                MessageBox.Show(ex.Message);
             }
-            if (Region.SelectedItem != null)
-            {
-                if (Region.SelectedItem.ToString() != "") region = Region.SelectedItem.ToString().Split()[0];
-            }
-            
-            string[] NewOrigs = PhotoViewerImage.FindImageNamesAndIDs("original", date, region, sputnik);
-            foreach (string orig in NewOrigs)
-            {
-                OriginalIDTB.Items.Add(orig);
-                
-            }
-            if (OriginalIDTB.Items.Count > 0) OriginalIDTB.SelectedIndex = 0;
         }
-        //
 
         /// <summary>
         /// Перезагрузка списка при изменении фильтров разметки
@@ -217,42 +317,49 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void MarkupFiltersChanged(object sender, SelectionChangedEventArgs e)
         {
-            //очистка списка
-            MarkupIDTB.Items.Clear();
-
-            //при имении выбранного оригинала
-            if (OriginalIDTB.SelectedItem != null)
+            try
             {
-                //если выбранный оригинал имеет текст
-                if (OriginalIDTB.SelectedItem.ToString() != "")
+                //очистка списка
+                MarkupIDTB.Items.Clear();
+
+                //при имении выбранного оригинала
+                if (OriginalIDTB.SelectedItem != null)
                 {
-                    //извлечение аргументов (дата)
-                    string dateIn = null;
-                    if (MarkupDate.SelectedItem != null)
+                    //если выбранный оригинал имеет текст
+                    if (OriginalIDTB.SelectedItem.ToString() != "")
                     {
-                        if (MarkupDate.SelectedItem.ToString() != "") dateIn = MarkupDate.SelectedItem.ToString();
-                    }
-
-                    //поиск значений (при неимении даты - не учитывать)
-                    string[] NewMarks;
-                    NewMarks = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]));
-                    if (dateIn != null)
-                    {
-                        if (dateIn != "")
+                        //извлечение аргументов (дата)
+                        string dateIn = null;
+                        if (MarkupDate.SelectedItem != null)
                         {
-                            DateTime NewDate = Convert.ToDateTime(dateIn);
-                            NewMarks = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]), NewDate);
+                            if (MarkupDate.SelectedItem.ToString() != "") dateIn = MarkupDate.SelectedItem.ToString();
                         }
-                    }
 
-                    //заполнение списка полученными именами
-                    foreach (string mark in NewMarks)
-                    {
-                        MarkupIDTB.Items.Add(mark);
+                        //поиск значений (при неимении даты - не учитывать)
+                        string[] NewMarks;
+                        NewMarks = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]));
+                        if (dateIn != null)
+                        {
+                            if (dateIn != "")
+                            {
+                                DateTime NewDate = Convert.ToDateTime(dateIn);
+                                NewMarks = PhotoViewerImage.FindImageNamesAndIDs(Convert.ToInt32(OriginalIDTB.SelectedItem.ToString().Split(':')[0]), NewDate);
+                            }
+                        }
 
+                        //заполнение списка полученными именами
+                        foreach (string mark in NewMarks)
+                        {
+                            MarkupIDTB.Items.Add(mark);
+
+                        }
+                        if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
                     }
-                    if (MarkupIDTB.Items.Count > 0) MarkupIDTB.SelectedIndex = 0;
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
         
@@ -306,14 +413,11 @@ namespace PhotoViewerPRCVI
         /// <param name="e"></param>
         private void BackToMain(object sender, RoutedEventArgs e)
         {
-            MainWindow MW;
             try
             {
-                MW = new MainWindow(OriginalImage.GetID(), MarkupImage.GetID());
-                if (MW == null)
-                {
-                    MW = new MainWindow();
-                }
+                MainWindow MW;
+                if (OriginalImage != null && MarkupImage != null) MW = new MainWindow(OriginalImage.GetID(), MarkupImage.GetID());
+                else MW = new MainWindow();
                 MW.Show();
                 this.Close();
             }

@@ -17,11 +17,11 @@
             </MenuItem>
             <MenuItem Header="Добавить снимок" Click="AddWindowOpen">
             </MenuItem>
-            <MenuItem Header="Изменить информацию">
+            <MenuItem x:Name="ButtonChangeInfo" Header="Изменить информацию">
                 <MenuItem Header="О текущем оригинальном фото" Click="ChangeOrigWindowOpen"></MenuItem>
                 <MenuItem Header="О текущем размеченном фото" Click="ChangeMarkupWindowOpen"></MenuItem>
             </MenuItem>
-            <MenuItem Header="Удалить">
+            <MenuItem x:Name="ButtonDeleteInfo" Header="Удалить">
                 <MenuItem Header="Оригинальное фото" Click="DeleteOrigWidowOpen"></MenuItem>
                 <MenuItem Header="Размеченное фото" Click="DeleteMarkupWindowOpen"></MenuItem>
             </MenuItem>
