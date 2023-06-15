@@ -613,8 +613,7 @@ namespace PhotoViewerPRCVI
 
             return names;
         }
-
-        //
+        
         /// <summary>
         /// Поиск всех названий снимков (оригинальный/размеченный) с привязкой к дате, региону, спутнику
         /// </summary>
@@ -622,19 +621,28 @@ namespace PhotoViewerPRCVI
         /// <returns></returns>
         public static string[] FindImageNamesAndIDs(string type, string date, string region, string sputnik)
         {
+            //возвращаемый массив строк с ID и именами файлов
             string[] names = new string[0];
+
+            //формирование доп. части строки с фильтрами
             string SQLplus = "";
-            if (date != null) SQLplus += " WHERE (Date = '" + date + "')";
+            if (date != null) if (date != "") SQLplus += " WHERE (Date = '" + date + "')";
             if (region != null)
             {
-                if (SQLplus != "") SQLplus += " AND ";
-                else SQLplus += "WHERE ";
-                SQLplus += "(Region = '" + region + "')";
+                if (region != "")
+                {
+                    if (SQLplus != "") SQLplus += " AND ";
+                    else SQLplus += "WHERE ";
+                    SQLplus += "(Region = '" + region + "')";
+                }
             }
             if (sputnik != null) {
-                if (SQLplus != "") SQLplus += " AND ";
-                else SQLplus += "WHERE ";
-                SQLplus += "(Sputnik = '" + sputnik + "')";
+                if (sputnik != "")
+                {
+                    if (SQLplus != "") SQLplus += " AND ";
+                    else SQLplus += "WHERE ";
+                    SQLplus += "(Sputnik = '" + sputnik + "')";
+                }
             }
 
             try
@@ -642,17 +650,19 @@ namespace PhotoViewerPRCVI
                 //открытие подключения
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
+                //для размеченных снимков
                 if (type == "markup")
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(MarkupID) FROM dbo.Markups" + SQLplus;
-
+                    string SQL = "SELECT Count(MarkupID) FROM dbo.Markups ";
+                    if (date != null) if (date != "") SQL += " WHERE (Date = '" + date + "')";
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups" + SQLplus;
+                    SQL = "SELECT MarkupID, Picturepath FROM dbo.Markups ";
+                    if (date != null) if (date != "") SQL += " WHERE (Date = '" + date + "')";
                     command = new SqlCommand(SQL, connection);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -665,10 +675,9 @@ namespace PhotoViewerPRCVI
                     //вывод в таблицу хранения
                     DataTable IDPathTable = new DataTable();
                     adapter.Fill(IDPathTable);
-
-                    int currentItem = 0;
-
+                    
                     //вывод ID оригиналов в item
+                    int currentItem = 0;
                     foreach (DataRow row in IDPathTable.Rows)
                     {
                         string path = row.Field<string>("Picturepath");
@@ -682,13 +691,13 @@ namespace PhotoViewerPRCVI
                 else
                 {
                     //получение размера массива 
-                    string SQL = "SELECT Count(OriginalID) FROM dbo.Originals" + SQLplus;
+                    string SQL = "SELECT Count(OriginalID) FROM dbo.Originals " + SQLplus;
                     SqlCommand command = new SqlCommand(SQL, connection);
                     int namesSize = Convert.ToInt32(command.ExecuteScalar());
                     names = new string[namesSize];
 
                     //получение ID и названия оригиналов из БД 
-                    SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals" + SQLplus;
+                    SQL = "SELECT OriginalID, Picturepath FROM dbo.Originals " + SQLplus;
                     command = new SqlCommand(SQL, connection);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -727,8 +736,6 @@ namespace PhotoViewerPRCVI
 
             return names;
         }
-
-        //
 
         /// <summary>
         /// Поиск всех дат создания оригинала
