@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.33026.149
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoViewerPRCVI", "App1\PhotoViewerPRCVI.csproj", "{E9DF82C0-CD64-4A0E-A094-097486BFFD52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{AB81A583-99F1-42FE-85E1-FEED60A7EBBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E9DF82C0-CD64-4A0E-A094-097486BFFD52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9DF82C0-CD64-4A0E-A094-097486BFFD52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9DF82C0-CD64-4A0E-A094-097486BFFD52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB81A583-99F1-42FE-85E1-FEED60A7EBBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB81A583-99F1-42FE-85E1-FEED60A7EBBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB81A583-99F1-42FE-85E1-FEED60A7EBBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB81A583-99F1-42FE-85E1-FEED60A7EBBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

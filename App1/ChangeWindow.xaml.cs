@@ -84,7 +84,7 @@ namespace PhotoViewerPRCVI
             DateBox.Text = DateBox.DisplayDate.ToString();
             if (type == "original")
             {
-                SputnikBox.Text = UpdatingImage.GetSputnik().Split()[0];
+                SputnikBox.Text = UpdatingImage.GetSatellite().Split()[0];
                 RegionBox.Text = UpdatingImage.GetRegion().Split()[0];
             }
             else
@@ -153,7 +153,7 @@ namespace PhotoViewerPRCVI
                 string NewSputnik;
                 if (SputnikBox.Text == "")
                 {
-                    NewSputnik = UpdatingImage.GetSputnik();
+                    NewSputnik = UpdatingImage.GetSatellite();
                 }
                 else
                 {

@@ -25,7 +25,7 @@ namespace PhotoViewerPRCVI
         int ID;
         int OriginalID;
         DateTime Date;
-        string Sputnik;
+        string Satellite;
         string Region;
         Uri Path;
 
@@ -59,7 +59,7 @@ namespace PhotoViewerPRCVI
                 adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
                 adapter.InsertCommand.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime, 50, "Date"));
                 adapter.InsertCommand.Parameters.Add(new SqlParameter("@Region", SqlDbType.NChar, 50, "Region"));
-                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Sputnik", SqlDbType.NChar, 50, "Sputnik"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Satellite", SqlDbType.NChar, 50, "Satellite"));
                 adapter.InsertCommand.Parameters.Add(new SqlParameter("@Picturepath", SqlDbType.NChar, 100, "Picturepath"));
 
                 //???
@@ -71,12 +71,16 @@ namespace PhotoViewerPRCVI
                 adapter.Fill(keepTable);
 
                 //заполнение полей информацией из таблицы
-                foreach(DataRow row in keepTable.Rows)
+                if (keepTable.Rows.Count == 0) throw new Exception("Изображения с указанным ID не существует в базе данных.");
+                else
                 {
-                    Date = row.Field<DateTime>("Date");
-                    Sputnik = row.Field<string>("Sputnik");
-                    Region = row.Field<string>("Region");
-                    Path = new Uri(row.Field<string>("Picturepath"));
+                    foreach (DataRow row in keepTable.Rows)
+                    {
+                        Date = row.Field<DateTime>("Date");
+                        Satellite = row.Field<string>("Satellite");
+                        Region = row.Field<string>("Region");
+                        Path = new Uri(row.Field<string>("Picturepath"));
+                    }
                 }
             }
             else
@@ -104,11 +108,15 @@ namespace PhotoViewerPRCVI
                 adapter.Fill(keepTable);
 
                 //заполнение полей информацией из таблицы
-                foreach (DataRow row in keepTable.Rows)
+                if (keepTable.Rows.Count == 0) throw new Exception("Изображения с указанным ID не существует в базе данных.");
+                else
                 {
-                    OriginalID = row.Field<int>("OriginalID");
-                    Date = row.Field<DateTime>("Date");
-                    Path = new Uri(row.Field<string>("Picturepath"));
+                    foreach (DataRow row in keepTable.Rows)
+                    {
+                        OriginalID = row.Field<int>("OriginalID");
+                        Date = row.Field<DateTime>("Date");
+                        Path = new Uri(row.Field<string>("Picturepath"));
+                    }
                 }
             }
         }
@@ -159,16 +167,18 @@ namespace PhotoViewerPRCVI
         /// <returns></returns>
         public string GetRegion()
         {
-            return Region;
+            if (Type == "original") return Region;
+            else throw new Exception("Запрошен регион съемки у размеченного снимка!/n(Информацию о регионе съемки имеют только оригинальные снимки)");
         }
 
         /// <summary>
         /// Получить спутник съемки
         /// </summary>
         /// <returns></returns>
-        public string GetSputnik()
+        public string GetSatellite()
         {
-            return Sputnik;
+            if (Type == "original") return Satellite;
+            else throw new Exception("Запрошен спутник съемки у размеченного снимка!/n(Информацию о спутнике имеют только оригинальные снимки)");
         }
 
         /// <summary>
@@ -202,9 +212,9 @@ namespace PhotoViewerPRCVI
         /// </summary>
         /// <param name="AddingPath">Путь к изображению</param>
         /// <param name="AddingDate">Дата создания снимка</param>
-        /// <param name="AddingSputnik">Спутник, с которого сделан снимок</param>
+        /// <param name="AddingSatellite">Спутник, с которого сделан снимок</param>
         /// <param name="AddingRegion">Регион, в котором сделан снимок</param>
-        public static void AddOriginalImageInDB(string AddingPath, DateTime AddingDate, string AddingSputnik, string AddingRegion)
+        public static void AddOriginalImageInDB(string AddingPath, DateTime AddingDate, string AddingSatellite, string AddingRegion)
         {
             try
             {
@@ -228,8 +238,8 @@ namespace PhotoViewerPRCVI
 
                 //добавление записи о снимке в таблицу БД
                 string AddingDateString = AddingDate.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm");
-                SQL = "INSERT INTO " + OriginalsTableName  + " (OriginalID, Date, Region, Sputnik, Picturepath) VALUES (" + newID + ", '" +
-                      AddingDateString + "', '" + AddingRegion + "', '" + AddingSputnik + "', '" + AddingPath + "');";
+                SQL = "INSERT INTO " + OriginalsTableName  + " (OriginalID, Date, Region, Satellite, Picturepath) VALUES (" + newID + ", '" +
+                      AddingDateString + "', '" + AddingRegion + "', '" + AddingSatellite + "', '" + AddingPath + "');";
                 command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -293,8 +303,8 @@ namespace PhotoViewerPRCVI
         /// <param name="ID">ID снимка</param>
         /// <param name="date">Новая дата создания снимка</param>
         /// <param name="Region">Новый регион съемки</param>
-        /// <param name="Sputnik">Новый спутник съемки</param>
-        public static void UpdateOrigImageDB(int ID, DateTime date, string Region, string Sputnik)
+        /// <param name="Satellite">Новый спутник съемки</param>
+        public static void UpdateOrigImageDB(int ID, DateTime date, string Region, string Satellite)
         {
             try
             {
@@ -302,7 +312,7 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //изменение записи в таблице
-                string SQL = "UPDATE " + OriginalsTableName  + " SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', Sputnik = '" + Sputnik + "', Region = '" + Region + "' WHERE (OriginalID = " + ID + ")"; //, (Region = '" + Region + "'), (Sputnik = '" + Sputnik + "')
+                string SQL = "UPDATE " + OriginalsTableName  + " SET Date = '" + date.ToString("yyyy'-'dd'-'MM'\x020'HH':'mm") + "', Satellite = '" + Satellite + "', Region = '" + Region + "' WHERE (OriginalID = " + ID + ")"; //, (Region = '" + Region + "'), (Satellite = '" + Satellite + "')
                 SqlCommand command = new SqlCommand(SQL, connection);
                 command.ExecuteScalar();
             }
@@ -641,7 +651,7 @@ namespace PhotoViewerPRCVI
         /// </summary>
         /// <param name="type">Тип снимка</param>
         /// <returns></returns>
-        public static string[] FindImageNamesAndIDs(string type, string date, string region, string sputnik)
+        public static string[] FindImageNamesAndIDs(string type, string date, string region, string satellite)
         {
             //возвращаемый массив строк с ID и именами файлов
             string[] names = new string[0];
@@ -658,12 +668,12 @@ namespace PhotoViewerPRCVI
                     SQLplus += "(Region = '" + region + "')";
                 }
             }
-            if (sputnik != null) {
-                if (sputnik != "")
+            if (satellite != null) {
+                if (satellite != "")
                 {
                     if (SQLplus != "") SQLplus += " AND ";
                     else SQLplus += "WHERE ";
-                    SQLplus += "(Sputnik = '" + sputnik + "')";
+                    SQLplus += "(Satellite = '" + satellite + "')";
                 }
             }
 
@@ -790,13 +800,13 @@ namespace PhotoViewerPRCVI
                 //parameter.Direction = ParameterDirection.Output;
 
                 //вывод в таблицу хранения
-                DataTable SputTable = new DataTable();
-                adapter.Fill(SputTable);
+                DataTable SatelTable = new DataTable();
+                adapter.Fill(SatelTable);
 
                 int currentItem = 0;
 
                 //вывод в массив
-                foreach (DataRow row in SputTable.Rows)
+                foreach (DataRow row in SatelTable.Rows)
                 {
                     names[currentItem] = row.Field<DateTime>("Date").ToString("dd'-'MM'-'yyyy'\x020'HH':'mm");
                     currentItem++;
@@ -845,13 +855,13 @@ namespace PhotoViewerPRCVI
                 //parameter.Direction = ParameterDirection.Output;
 
                 //вывод в таблицу хранения
-                DataTable SputTable = new DataTable();
-                adapter.Fill(SputTable);
+                DataTable SatelTable = new DataTable();
+                adapter.Fill(SatelTable);
 
                 int currentItem = 0;
 
                 //вывод в массив
-                foreach (DataRow row in SputTable.Rows)
+                foreach (DataRow row in SatelTable.Rows)
                 {
                     names[currentItem] = row.Field<DateTime>("Date").ToString("dd'-'MM'-'yyyy'\x020'HH':'mm");
                     currentItem++;
@@ -873,7 +883,7 @@ namespace PhotoViewerPRCVI
         /// Поиск всех названий спутников
         /// </summary>
         /// <returns></returns>
-        public static string[] FindAllSputniks()
+        public static string[] FindAllSatellites()
         {
             string[] names = new string[0];
 
@@ -883,32 +893,32 @@ namespace PhotoViewerPRCVI
                 if (connection.State == ConnectionState.Closed) connection.Open();
 
                 //получение размера массива 
-                string SQL = "SELECT Count(DISTINCT Sputnik) FROM " + OriginalsTableName;
+                string SQL = "SELECT Count(DISTINCT Satellite) FROM " + OriginalsTableName;
                 SqlCommand command = new SqlCommand(SQL, connection);
                 int namesSize = Convert.ToInt32(command.ExecuteScalar());
                 names = new string[namesSize];
 
                 //получение ID и названия оригиналов из БД 
-                SQL = "SELECT DISTINCT Sputnik FROM " + OriginalsTableName;
+                SQL = "SELECT DISTINCT Satellite FROM " + OriginalsTableName;
                 command = new SqlCommand(SQL, connection);
 
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
-                adapter.InsertCommand = new SqlCommand("Sputniks", connection);
+                adapter.InsertCommand = new SqlCommand("Satellites", connection);
                 adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
-                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Sputnik", SqlDbType.NChar, 75, "Sputnik"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@Satellite", SqlDbType.NChar, 75, "Satellite"));
                 //SqlParameter parameter = adapter.InsertCommand.Parameters.Add("@MarkupID", SqlDbType.Int, 10, "MarkupID");
                 //parameter.Direction = ParameterDirection.Output;
 
                 //вывод в таблицу хранения
-                DataTable SputTable = new DataTable();
-                adapter.Fill(SputTable);
+                DataTable SatelTable = new DataTable();
+                adapter.Fill(SatelTable);
 
                 int currentItem = 0;
 
                 //вывод ID оригиналов в item
-                foreach (DataRow row in SputTable.Rows)
+                foreach (DataRow row in SatelTable.Rows)
                 {
-                    names[currentItem] = row.Field<string>("Sputnik");
+                    names[currentItem] = row.Field<string>("Satellite");
                     currentItem++;
                 }
             }
@@ -1005,14 +1015,14 @@ namespace PhotoViewerPRCVI
                 keepTable.Rows.Add("Дата создания оригинала", OriginalImage.GetDate().ToString());
                 keepTable.Rows.Add("Дата создания разметки", MarkupImage.GetDate().ToString());
                 keepTable.Rows.Add("Регион съемки оригинала", OriginalImage.GetRegion().ToString());
-                keepTable.Rows.Add("Спутник, с которого сфотографирован оригинал", OriginalImage.GetSputnik().ToString());
+                keepTable.Rows.Add("Спутник, с которого снят оригинал", OriginalImage.GetSatellite().ToString());
 
                 //заполнение элемента таблицы информацией из таблицы хранения
                 table.ItemsSource = keepTable.DefaultView;
 
                 /*
                 //полная команда (SQL query + connection query) для извлечения информации
-                string SQL = "SELECT " + OriginalsTableName + ".Date, " +  MarkupsTableName + ".Date, Region, Sputnik, Region FROM " + OriginalsTableName  + ", " +  MarkupsTableName + "";
+                string SQL = "SELECT " + OriginalsTableName + ".Date, " +  MarkupsTableName + ".Date, Region, Satellite, Region FROM " + OriginalsTableName  + ", " +  MarkupsTableName + "";
                 SqlCommand command = new SqlCommand(SQL, connection);
 
                 //адаптер для извлечения информации из БД в Таблицу

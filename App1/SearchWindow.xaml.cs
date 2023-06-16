@@ -252,11 +252,11 @@ namespace PhotoViewerPRCVI
         {
             try
             {
-                string[] sputniks = PhotoViewerImage.FindAllSputniks();
+                string[] sputniks = PhotoViewerImage.FindAllSatellites();
                 foreach (string sputnik in sputniks)
                 {
                     Sputnik.Items.Add(sputnik);
-                    //if (sputnik == OriginalImage.GetSputnik()) Sputnik.SelectedIndex = Sputnik.Items.Count - 1;
+                    //if (sputnik == OriginalImage.GetSatellite()) Satellite.SelectedIndex = Satellite.Items.Count - 1;
                 }
             }
             catch(Exception ex)
